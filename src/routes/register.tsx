@@ -48,17 +48,19 @@ function RegisterPage() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase
-      .from("registrations")
-      .insert(parsed.data)
-      .select("id, entry_number, full_name, phone, whatsapp, is_cloud9")
-      .single();
+    const { data, error } = await supabase.rpc("register_entry", {
+      _full_name: parsed.data.full_name,
+      _phone: parsed.data.phone,
+      _whatsapp: parsed.data.whatsapp,
+      _is_cloud9: parsed.data.is_cloud9,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
-    if (error || !data) {
-      toast.error("Could not register. Please try again.");
+    if (error || !row) {
+      toast.error(error?.message || "Could not register. Please try again.");
       return;
     }
-    saveReg(data);
+    saveReg(row);
     navigate({ to: "/connect" });
   }
 
