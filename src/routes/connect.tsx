@@ -51,7 +51,10 @@ function ConnectPage() {
     if (state[key]) return;
     const next = { ...state, [key]: true };
     setState(next);
-    await supabase.from("registrations").update({ [key]: true }).eq("id", reg!.id);
+    await supabase
+      .from("registrations")
+      .update({ [key]: true } as Record<string, boolean>)
+      .eq("id", reg!.id);
   }
 
   function openWhatsApp() {
