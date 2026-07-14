@@ -51,10 +51,12 @@ function ConnectPage() {
     if (state[key]) return;
     const next = { ...state, [key]: true };
     setState(next);
-    await supabase
-      .from("registrations")
-      .update({ [key]: true } as Record<string, boolean>)
-      .eq("id", reg!.id);
+    const patch: Record<Key, boolean> = {
+      whatsapp_done: false, instagram1_done: false, instagram2_done: false, youtube_done: false,
+    };
+    (patch as Record<string, boolean>)[key] = true;
+    const only = { [key]: true } as { [K in Key]?: boolean };
+    await supabase.from("registrations").update(only).eq("id", reg!.id);
   }
 
   function openWhatsApp() {
