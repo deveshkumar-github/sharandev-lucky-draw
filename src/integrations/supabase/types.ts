@@ -89,6 +89,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_engagement_step: {
+        Args: { _id: string; _step: string }
+        Returns: undefined
+      }
+      register_entry: {
+        Args: {
+          _full_name: string
+          _is_cloud9: boolean
+          _phone: string
+          _whatsapp: string
+        }
+        Returns: {
+          entry_number: string
+          full_name: string
+          id: string
+          is_cloud9: boolean
+          phone: string
+          whatsapp: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin"

@@ -51,12 +51,13 @@ function ConnectPage() {
     if (state[key]) return;
     const next = { ...state, [key]: true };
     setState(next);
-    const patch: Record<Key, boolean> = {
-      whatsapp_done: false, instagram1_done: false, instagram2_done: false, youtube_done: false,
+    const stepMap: Record<Key, string> = {
+      whatsapp_done: "whatsapp",
+      instagram1_done: "instagram1",
+      instagram2_done: "instagram2",
+      youtube_done: "youtube",
     };
-    (patch as Record<string, boolean>)[key] = true;
-    const only = { [key]: true } as { [K in Key]?: boolean };
-    await supabase.from("registrations").update(only).eq("id", reg!.id);
+    await supabase.rpc("mark_engagement_step", { _id: reg!.id, _step: stepMap[key] });
   }
 
   function openWhatsApp() {
