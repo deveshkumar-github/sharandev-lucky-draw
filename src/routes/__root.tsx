@@ -81,10 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Sharandev Fashions — Cloud9 Saree Exhibition Lucky Draw" },
       { name: "description", content: "Register in 30 seconds for the Cloud9 Saree Exhibition Lucky Draw by Sharandev Fashions. Win exciting festive gifts!" },
       { name: "author", content: "Sharandev Fashions" },
-      { property: "og:title", content: "Cloud9 Saree Exhibition Lucky Draw" },
-      { property: "og:description", content: "Register in 30 seconds and stand a chance to win exciting gifts!" },
+      { property: "og:title", content: "Sharandev Fashions — Cloud9 Saree Exhibition Lucky Draw" },
+      { property: "og:description", content: "Register in 30 seconds for the Cloud9 Saree Exhibition Lucky Draw by Sharandev Fashions. Win exciting festive gifts!" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Sharandev Fashions — Cloud9 Saree Exhibition Lucky Draw" },
+      { name: "twitter:description", content: "Register in 30 seconds for the Cloud9 Saree Exhibition Lucky Draw by Sharandev Fashions. Win exciting festive gifts!" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/07a33a82-4727-4313-8dd5-da209ab5579b/id-preview-78636d4a--27616b98-38a0-45d2-8c3a-0a22f46de4ce.lovable.app-1784015396678.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/07a33a82-4727-4313-8dd5-da209ab5579b/id-preview-78636d4a--27616b98-38a0-45d2-8c3a-0a22f46de4ce.lovable.app-1784015396678.png" },
     ],
     links: [
       {
