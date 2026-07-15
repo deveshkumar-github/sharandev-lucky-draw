@@ -28,31 +28,72 @@ function SuccessPage() {
   const date = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-5 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-red-hero px-5 py-10 text-white">
       <Confetti />
-      <div className="relative mx-auto flex min-h-[85vh] max-w-md flex-col items-center justify-center text-center">
-        <div className="animate-gift-open mb-6 grid h-36 w-36 place-items-center rounded-[36px] gradient-festive shadow-festive">
-          <span className="text-7xl">🎉</span>
+      <div className="relative mx-auto flex min-h-[90vh] max-w-md flex-col items-center justify-center text-center">
+        <div className="animate-gift-open mb-5 grid h-28 w-28 place-items-center rounded-[36px] gradient-gold shadow-gold">
+          <span className="text-6xl">🎉</span>
         </div>
-        <h1 className="text-4xl font-black leading-tight">
+        <h1 className="font-display text-4xl font-black italic leading-tight">
           <span className="text-shimmer">Congratulations!</span>
         </h1>
-        <p className="mt-3 text-lg text-maroon">
-          You have successfully entered the Lucky Draw.
+        <p className="mt-2 font-serif-lux text-xl italic text-gold">
+          You're entered in the Lucky Draw
         </p>
 
-        <div className="mt-8 w-full rounded-3xl glass-card p-6 shadow-festive">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            🎟 Entry Number
-          </div>
-          <div className="mt-1 text-4xl font-black text-primary">{reg.entry_number}</div>
-          <div className="mt-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            📅 Registered On
-          </div>
-          <div className="mt-1 text-base font-semibold text-maroon">{date}</div>
-          <div className="mt-5 rounded-2xl bg-primary/5 p-3 text-sm text-maroon">
-            Thank you, <b>{reg.full_name}</b>! Winners will be contacted on your
-            registered WhatsApp number.
+        {/* Premium Coupon */}
+        <div className="animate-gift-open relative mt-8 w-full">
+          {/* Outer gold frame */}
+          <div className="rounded-[28px] gradient-gold p-[2px] shadow-gold">
+            <div className="coupon-paper relative overflow-hidden rounded-[26px] px-6 py-7 text-maroon">
+              {/* Perforation line */}
+              <div className="absolute left-6 right-6 top-1/2 border-t border-dashed border-maroon/30" />
+              {/* Corner ornaments */}
+              <div className="pointer-events-none absolute left-3 top-3 text-gold text-lg">✦</div>
+              <div className="pointer-events-none absolute right-3 top-3 text-gold text-lg">✦</div>
+              <div className="pointer-events-none absolute left-3 bottom-3 text-gold text-lg">✦</div>
+              <div className="pointer-events-none absolute right-3 bottom-3 text-gold text-lg">✦</div>
+
+              <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-maroon/70">
+                Sharandev Fashions
+              </div>
+              <div className="font-serif-lux text-sm italic text-maroon/80">
+                Cloud9 Saree Exhibition
+              </div>
+
+              <div className="mt-5 text-[11px] font-semibold uppercase tracking-[0.35em] text-maroon/60">
+                🎟 Lucky Draw Entry
+              </div>
+              <div
+                className="font-display text-6xl font-black tracking-wider"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(0.32 0.14 22), oklch(0.5 0.22 22), oklch(0.72 0.14 75))",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {reg.entry_number}
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3 text-left">
+                <div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-maroon/50">Name</div>
+                  <div className="font-serif-lux text-lg font-semibold leading-tight text-maroon">
+                    {reg.full_name}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-maroon/50">Issued</div>
+                  <div className="font-serif-lux text-sm font-semibold text-maroon">{date}</div>
+                </div>
+              </div>
+
+              <div className="mt-5 border-t border-dashed border-maroon/20 pt-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-maroon/60">
+                Winners will be contacted on WhatsApp
+              </div>
+            </div>
           </div>
         </div>
 

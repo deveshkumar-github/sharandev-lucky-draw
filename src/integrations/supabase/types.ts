@@ -82,6 +82,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_registration: {
+        Args: {
+          _full_name: string
+          _is_cloud9: boolean
+          _phone: string
+          _whatsapp: string
+        }
+        Returns: {
+          created_at: string
+          entry_number: string
+          full_name: string
+          id: string
+          is_cloud9: boolean
+          phone: string
+          whatsapp: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
