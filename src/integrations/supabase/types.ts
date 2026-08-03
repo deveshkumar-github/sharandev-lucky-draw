@@ -14,10 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           created_at: string
           entry_number: string
+          flat_no: string | null
           full_name: string
           id: string
           instagram1_done: boolean
@@ -31,6 +53,7 @@ export type Database = {
         Insert: {
           created_at?: string
           entry_number?: string
+          flat_no?: string | null
           full_name: string
           id?: string
           instagram1_done?: boolean
@@ -44,6 +67,7 @@ export type Database = {
         Update: {
           created_at?: string
           entry_number?: string
+          flat_no?: string | null
           full_name?: string
           id?: string
           instagram1_done?: boolean
@@ -112,6 +136,7 @@ export type Database = {
       }
       register_entry: {
         Args: {
+          _flat_no?: string
           _full_name: string
           _is_cloud9: boolean
           _phone: string
@@ -119,6 +144,7 @@ export type Database = {
         }
         Returns: {
           entry_number: string
+          flat_no: string
           full_name: string
           id: string
           is_cloud9: boolean

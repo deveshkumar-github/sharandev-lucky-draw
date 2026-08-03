@@ -21,6 +21,7 @@ const schema = z.object({
   phone: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid phone number"),
   whatsapp: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid WhatsApp number"),
   is_cloud9: z.boolean(),
+  flat_no: z.string().trim().max(30).optional(),
 });
 
 function RegisterPage() {
@@ -30,6 +31,7 @@ function RegisterPage() {
   const [sameWa, setSameWa] = useState<null | boolean>(null);
   const [wa, setWa] = useState("");
   const [cloud9, setCloud9] = useState<null | boolean>(null);
+  const [flat, setFlat] = useState("");
   const [loading, setLoading] = useState(false);
 
   const ready =
@@ -42,6 +44,7 @@ function RegisterPage() {
       phone,
       whatsapp,
       is_cloud9: !!cloud9,
+      flat_no: flat,
     });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
@@ -53,6 +56,7 @@ function RegisterPage() {
       _phone: parsed.data.phone,
       _whatsapp: parsed.data.whatsapp,
       _is_cloud9: parsed.data.is_cloud9,
+      _flat_no: cloud9 ? parsed.data.flat_no || undefined : undefined,
     });
     const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
@@ -114,6 +118,18 @@ function RegisterPage() {
             value={cloud9}
             onChange={setCloud9}
           />
+
+          {cloud9 === true && (
+            <Field label="Flat No. (optional)">
+              <input
+                className="input-lg"
+                value={flat}
+                onChange={(e) => setFlat(e.target.value)}
+                placeholder="e.g. B-1204"
+                maxLength={30}
+              />
+            </Field>
+          )}
 
           <button
             disabled={!ready || loading}

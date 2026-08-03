@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Confetti } from "@/components/festive-bg";
 import { clearReg, loadReg, type PendingReg } from "@/lib/session";
+import logo from "@/assets/sharandev-logo.png";
 
 export const Route = createFileRoute("/success")({
   component: SuccessPage,
@@ -54,18 +55,20 @@ function SuccessPage() {
               <div className="pointer-events-none absolute left-3 bottom-3 text-gold text-lg">✦</div>
               <div className="pointer-events-none absolute right-3 bottom-3 text-gold text-lg">✦</div>
 
-              <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-maroon/70">
-                Sharandev Fashions
-              </div>
-              <div className="font-serif-lux text-sm italic text-maroon/80">
+              <img
+                src={logo}
+                alt="Sharandev Fashion & Creations"
+                className="mx-auto h-14 w-auto rounded-xl"
+              />
+              <div className="mt-2 font-ticket text-[10px] font-bold uppercase tracking-[0.4em] text-maroon/70">
                 Cloud9 Saree Exhibition
               </div>
 
-              <div className="mt-5 text-[11px] font-semibold uppercase tracking-[0.35em] text-maroon/60">
+              <div className="mt-5 font-ticket text-[11px] font-semibold uppercase tracking-[0.35em] text-maroon/60">
                 🎟 Lucky Draw Entry
               </div>
               <div
-                className="font-display text-6xl font-black tracking-wider"
+                className="font-ticket text-[54px] font-black leading-none tracking-[0.06em]"
                 style={{
                   background:
                     "linear-gradient(135deg, oklch(0.32 0.14 22), oklch(0.5 0.22 22), oklch(0.72 0.14 75))",
@@ -79,19 +82,19 @@ function SuccessPage() {
 
               <div className="mt-6 grid grid-cols-2 gap-3 text-left">
                 <div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-maroon/50">Name</div>
-                  <div className="font-serif-lux text-lg font-semibold leading-tight text-maroon">
+                  <div className="font-ticket text-[9px] font-bold uppercase tracking-widest text-maroon/50">Name</div>
+                  <div className="font-ticket text-base font-bold leading-tight text-maroon">
                     {reg.full_name}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-maroon/50">Issued</div>
-                  <div className="font-serif-lux text-sm font-semibold text-maroon">{date}</div>
+                  <div className="font-ticket text-[9px] font-bold uppercase tracking-widest text-maroon/50">Issued</div>
+                  <div className="font-ticket text-sm font-semibold text-maroon">{date}</div>
                 </div>
               </div>
 
-              <div className="mt-5 border-t border-dashed border-maroon/20 pt-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-maroon/60">
-                Winners will be contacted on WhatsApp
+              <div className="mt-5 border-t border-dashed border-maroon/20 pt-3 font-ticket text-[10px] font-semibold uppercase tracking-[0.28em] text-maroon/60">
+                3 Winners · 1st Prize ₹5,000 Saree
               </div>
             </div>
           </div>

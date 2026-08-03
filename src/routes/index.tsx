@@ -1,8 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FloatingGifts } from "@/components/festive-bg";
+import logo from "@/assets/sharandev-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  head: () => ({
+    meta: [
+      { title: "Sharandev Fashions Saree Exhibition — Lucky Draw" },
+      {
+        name: "description",
+        content:
+          "Register free for the Sharandev Fashions Cloud9 Saree Exhibition Lucky Draw. 3 winners — 1st prize a ₹5000 saree plus 2 exciting gifts.",
+      },
+      { property: "og:title", content: "Sharandev Fashions Saree Exhibition — Lucky Draw" },
+      {
+        property: "og:description",
+        content: "3 winners. 1st prize ₹5000 worth saree + 2 exciting gifts. Register in 30 seconds.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
 });
 
 function Landing() {
@@ -15,13 +33,14 @@ function Landing() {
       <div className="pointer-events-none absolute bottom-10 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full border border-gold/20 opacity-30" />
 
       <div className="relative mx-auto flex min-h-[92vh] max-w-md flex-col items-center justify-center text-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold backdrop-blur-md">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-          Sharandev Fashions
-        </div>
+        <img
+          src={logo}
+          alt="Sharandev Fashion & Creations logo"
+          className="mb-6 w-64 max-w-full rounded-3xl border border-gold/30 shadow-gold"
+        />
 
-        <div className="mb-7 flex h-40 w-40 items-center justify-center rounded-[42px] gradient-gold shadow-gold animate-float-gift">
-          <span className="text-7xl drop-shadow-lg">🎁</span>
+        <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-[34px] gradient-gold shadow-gold animate-float-gift">
+          <span className="text-5xl drop-shadow-lg">🎁</span>
         </div>
 
         <h1 className="font-display text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">
@@ -38,6 +57,28 @@ function Landing() {
         <p className="mt-6 max-w-xs text-base text-white/85">
           Register in <b className="text-gold">30 seconds</b> and win luxurious festive gifts at the Cloud9 Exhibition.
         </p>
+
+        <div className="mt-8 w-full space-y-3 text-left">
+          <div className="text-center text-[11px] font-bold uppercase tracking-[0.3em] text-gold">
+            3 Lucky Winners
+          </div>
+          {[
+            { p: "1st Prize", d: "Saree worth ₹5,000/-", i: "🥇" },
+            { p: "2nd Prize", d: "Exciting Gift", i: "🥈" },
+            { p: "3rd Prize", d: "Exciting Gift", i: "🥉" },
+          ].map((w) => (
+            <div
+              key={w.p}
+              className="flex items-center gap-3 rounded-2xl border border-gold/30 bg-white/5 px-4 py-3 backdrop-blur-sm"
+            >
+              <span className="text-2xl">{w.i}</span>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-gold">{w.p}</div>
+                <div className="font-serif-lux text-lg italic text-white">{w.d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <Link
           to="/register"
