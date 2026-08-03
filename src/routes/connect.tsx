@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StepHeader } from "@/components/step-header";
 import { loadReg, saveReg, type PendingReg } from "@/lib/session";
 import { toast } from "sonner";
+import { fillTemplate, getTemplate, waLink } from "@/lib/templates";
 
 export const Route = createFileRoute("/connect")({
   component: ConnectPage,
@@ -60,13 +61,19 @@ function ConnectPage() {
     await supabase.rpc("mark_engagement_step", { _id: reg!.id, _step: stepMap[key] });
   }
 
-  function openWhatsApp() {
-    const msg =
-      `Hello Sharandev Fashions! 👋\nI have registered for the Cloud9 Saree Exhibition Lucky Draw.\n\n` +
-      `Name: ${reg!.full_name}\nPhone: ${reg!.phone}\nWhatsApp: ${reg!.whatsapp}\n` +
-      `Cloud9 Resident: ${reg!.is_cloud9 ? "Yes" : "No"}\n\nThank you! 🎁`;
-    const url = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+  async function openWhatsApp() {
+    const tab = window.open("", "_blank");
+    const tpl = await getTemplate("wa_register_template");
+    const msg = fillTemplate(tpl, {
+      name: reg!.full_name,
+      phone: reg!.phone,
+      whatsapp: reg!.whatsapp,
+      cloud9: reg!.is_cloud9 ? "Yes" : "No",
+      flat: reg!.flat_no || "-",
+    });
+    const url = waLink(WA_PHONE, msg);
+    if (tab) tab.location.href = url;
+    else window.open(url, "_blank");
     mark("whatsapp_done");
   }
 
