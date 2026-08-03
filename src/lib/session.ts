@@ -5,6 +5,7 @@ export type PendingReg = {
   phone: string;
   whatsapp: string;
   is_cloud9: boolean;
+  flat_no?: string | null;
 };
 
 const KEY = "sharandev_lucky_draw";
