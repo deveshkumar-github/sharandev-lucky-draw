@@ -509,6 +509,7 @@ function AddEntryModal({
   const [phone, setPhone] = useState("");
   const [whatsapp, setWa] = useState("");
   const [is_cloud9, setC9] = useState(false);
+  const [flat_no, setFlat] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function submit() {
@@ -522,6 +523,7 @@ function AddEntryModal({
           phone,
           whatsapp: whatsapp || phone,
           is_cloud9,
+          flat_no: is_cloud9 ? flat_no : "",
         },
       });
       onAdded(row as Row);
@@ -563,6 +565,14 @@ function AddEntryModal({
             <input type="checkbox" checked={is_cloud9} onChange={(e) => setC9(e.target.checked)} />
             Cloud9 Resident
           </label>
+          {is_cloud9 && (
+            <input
+              className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
+              placeholder="Flat No. (optional)"
+              value={flat_no}
+              onChange={(e) => setFlat(e.target.value)}
+            />
+          )}
         </div>
         <div className="mt-6 flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon">
