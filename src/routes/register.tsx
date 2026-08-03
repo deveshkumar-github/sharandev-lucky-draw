@@ -56,7 +56,7 @@ function RegisterPage() {
       _phone: parsed.data.phone,
       _whatsapp: parsed.data.whatsapp,
       _is_cloud9: parsed.data.is_cloud9,
-      _flat_no: cloud9 ? parsed.data.flat_no || null : null,
+      _flat_no: cloud9 ? parsed.data.flat_no || undefined : undefined,
     });
     const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
