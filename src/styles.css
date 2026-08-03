@@ -201,6 +201,11 @@
 @utility font-serif-lux {
   font-family: "Cormorant Garamond", Georgia, serif;
 }
+@utility font-ticket {
+  font-family: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
 
 @utility bg-red-hero {
   background:
