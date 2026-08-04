@@ -70,8 +70,8 @@ function SuccessPage() {
 
               {/* notches */}
               <div className="relative">
-                <div className="absolute -left-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-[color:var(--maroon)]" />
-                <div className="absolute -right-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-[color:var(--maroon)]" />
+                <div className="absolute -left-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-red-hero" />
+                <div className="absolute -right-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-red-hero" />
                 <div className="mx-6 border-t-2 border-dashed border-maroon/25" />
               </div>
 
