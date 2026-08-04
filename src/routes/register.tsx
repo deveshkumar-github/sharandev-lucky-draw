@@ -10,8 +10,8 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
   head: () => ({
     meta: [
-      { title: "Register — Cloud9 Lucky Draw" },
-      { name: "description", content: "Register in 30 seconds for the Cloud9 Saree Exhibition Lucky Draw." },
+      { title: "Register — Sharandev Fashions Saree Exhibition Lucky Draw" },
+      { name: "description", content: "Register in 30 seconds for the Sharandev Fashions SAREE EXHIBITION Lucky Draw." },
     ],
   }),
 });
@@ -21,7 +21,9 @@ const schema = z.object({
   phone: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid phone number"),
   whatsapp: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid WhatsApp number"),
   is_cloud9: z.boolean(),
-  flat_no: z.string().trim().max(30).optional(),
+  total_bill: z.number().min(0).max(10000000),
+  total_paid: z.number().min(0).max(10000000),
+  fully_paid: z.boolean(),
 });
 
 function RegisterPage() {
@@ -31,11 +33,17 @@ function RegisterPage() {
   const [sameWa, setSameWa] = useState<null | boolean>(null);
   const [wa, setWa] = useState("");
   const [cloud9, setCloud9] = useState<null | boolean>(null);
-  const [flat, setFlat] = useState("");
+  const [bill, setBill] = useState("");
+  const [paid, setPaid] = useState("");
+  const [fullPaid, setFullPaid] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const ready =
-    name.trim() && phone.trim() && sameWa !== null && (sameWa || wa.trim()) && cloud9 !== null;
+    name.trim() && phone.trim() && sameWa !== null && (sameWa || wa.trim()) && cloud9 !== null && bill.trim() !== "";
+
+  const billNum = Number(bill) || 0;
+  const paidNum = fullPaid ? billNum : Number(paid) || 0;
+  const pending = Math.max(0, billNum - paidNum);
 
   async function submit() {
     const whatsapp = sameWa ? phone : wa;
@@ -44,7 +52,9 @@ function RegisterPage() {
       phone,
       whatsapp,
       is_cloud9: !!cloud9,
-      flat_no: flat,
+      total_bill: billNum,
+      total_paid: Math.min(paidNum, billNum),
+      fully_paid: fullPaid,
     });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
@@ -56,7 +66,9 @@ function RegisterPage() {
       _phone: parsed.data.phone,
       _whatsapp: parsed.data.whatsapp,
       _is_cloud9: parsed.data.is_cloud9,
-      _flat_no: cloud9 ? parsed.data.flat_no || undefined : undefined,
+      _total_bill: parsed.data.total_bill,
+      _total_paid: parsed.data.total_paid,
+      _fully_paid: parsed.data.fully_paid,
     });
     const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
@@ -119,17 +131,42 @@ function RegisterPage() {
             onChange={setCloud9}
           />
 
-          {cloud9 === true && (
-            <Field label="Flat No. (optional)">
+          <Field label="Total Bill Amount (₹) *">
+            <input
+              className="input-lg"
+              inputMode="decimal"
+              value={bill}
+              onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
+              placeholder="e.g. 5000"
+            />
+          </Field>
+
+          <label className="flex items-center gap-3 rounded-2xl border-2 border-border bg-white px-4 py-4">
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-[color:var(--primary)]"
+              checked={fullPaid}
+              onChange={(e) => setFullPaid(e.target.checked)}
+            />
+            <span className="text-base font-bold text-maroon">Fully paid</span>
+          </label>
+
+          {!fullPaid && (
+            <Field label="Total Paid (₹)">
               <input
                 className="input-lg"
-                value={flat}
-                onChange={(e) => setFlat(e.target.value)}
-                placeholder="e.g. B-1204"
-                maxLength={30}
+                inputMode="decimal"
+                value={paid}
+                onChange={(e) => setPaid(e.target.value.replace(/[^0-9.]/g, ""))}
+                placeholder="Amount paid so far"
               />
             </Field>
           )}
+
+          <div className="flex items-center justify-between rounded-2xl bg-muted px-4 py-3">
+            <span className="text-sm font-semibold text-maroon">Pending Amount</span>
+            <span className="font-ticket text-xl font-black text-primary">₹{pending.toLocaleString("en-IN")}</span>
+          </div>
 
           <button
             disabled={!ready || loading}
