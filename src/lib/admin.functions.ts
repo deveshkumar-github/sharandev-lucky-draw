@@ -33,13 +33,19 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
     phone: string;
     whatsapp: string;
     is_cloud9: boolean;
-    flat_no?: string;
+    total_bill?: number;
+    total_paid?: number;
+    fully_paid?: boolean;
   }) => d)
   .handler(async ({ data }) => {
     verify(data.password);
     if (!data.full_name?.trim() || !data.phone?.trim() || !data.whatsapp?.trim()) {
       throw new Error("Missing required fields");
     }
+    const bill = Math.max(0, Number(data.total_bill ?? 0));
+    let paid = Math.max(0, Number(data.total_paid ?? 0));
+    if (data.fully_paid) paid = bill;
+    if (paid > bill) paid = bill;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("registrations")
@@ -48,7 +54,9 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
         phone: data.phone.trim(),
         whatsapp: data.whatsapp.trim(),
         is_cloud9: !!data.is_cloud9,
-        flat_no: data.flat_no?.trim() || null,
+        total_bill: bill,
+        total_paid: paid,
+        fully_paid: bill > 0 && paid >= bill,
       })
       .select("*")
       .single();
@@ -80,7 +88,13 @@ export const adminSaveTemplate = createServerFn({ method: "POST" })
   .inputValidator((d: { password: string; key: string; value: string }) => d)
   .handler(async ({ data }) => {
     verify(data.password);
-    const allowed = ["wa_register_template", "wa_customer_template", "wa_winner_template"];
+    const allowed = [
+      "wa_register_template",
+      "wa_customer_template",
+      "wa_winner_template",
+      "coupon_title",
+      "coupon_subtitle",
+    ];
     if (!allowed.includes(data.key)) throw new Error("Unknown template");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
@@ -88,4 +102,28 @@ export const adminSaveTemplate = createServerFn({ method: "POST" })
       .upsert({ key: data.key, value: data.value }, { onConflict: "key" });
     if (error) throw new Error(error.message);
     return { ok: true as const };
+  });
+export const adminUpdatePayment = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    password: string;
+    id: string;
+    total_bill: number;
+    total_paid: number;
+    fully_paid: boolean;
+  }) => d)
+  .handler(async ({ data }) => {
+    verify(data.password);
+    const bill = Math.max(0, Number(data.total_bill ?? 0));
+    let paid = Math.max(0, Number(data.total_paid ?? 0));
+    if (data.fully_paid) paid = bill;
+    if (paid > bill) paid = bill;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("registrations")
+      .update({ total_bill: bill, total_paid: paid, fully_paid: bill > 0 && paid >= bill })
+      .eq("id", data.id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
   });
