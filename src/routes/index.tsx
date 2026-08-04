@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FloatingGifts } from "@/components/festive-bg";
-import logo from "@/assets/sharandev-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -10,7 +9,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Register free for the Sharandev Fashions Cloud9 Saree Exhibition Lucky Draw. 3 winners — 1st prize a ₹5000 saree plus 2 exciting gifts.",
+          "Register free for the Sharandev Fashions SAREE EXHIBITION Lucky Draw. 3 winners — 1st prize a ₹5000 saree plus 2 exciting gifts.",
       },
       { property: "og:title", content: "Sharandev Fashions Saree Exhibition — Lucky Draw" },
       {
@@ -33,20 +32,14 @@ function Landing() {
       <div className="pointer-events-none absolute bottom-10 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full border border-gold/20 opacity-30" />
 
       <div className="relative mx-auto flex min-h-[92vh] max-w-md flex-col items-center justify-center text-center">
-        <img
-          src={logo}
-          alt="Sharandev Fashion & Creations logo"
-          className="mb-6 w-64 max-w-full rounded-3xl border border-gold/30 shadow-gold"
-        />
-
         <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-[34px] gradient-gold shadow-gold animate-float-gift">
           <span className="text-5xl drop-shadow-lg">🎁</span>
         </div>
 
-        <h1 className="font-display text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">
-          Saree
+        <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl">
+          Sharandev Fashions
           <br />
-          <span className="text-shimmer italic">Exhibition</span>
+          <span className="text-shimmer italic">SAREE EXHIBITION</span>
         </h1>
         <div className="mt-4 flex items-center gap-3">
           <span className="h-px w-10 bg-gold/60" />
@@ -55,7 +48,7 @@ function Landing() {
         </div>
 
         <p className="mt-6 max-w-xs text-base text-white/85">
-          Register in <b className="text-gold">30 seconds</b> and win luxurious festive gifts at the Cloud9 Exhibition.
+          Register in <b className="text-gold">30 seconds</b> and win luxurious festive gifts at the Sharandev Fashions Saree Exhibition.
         </p>
 
         <div className="mt-8 w-full space-y-3 text-left">
@@ -101,7 +94,7 @@ function Landing() {
         </div>
 
         <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/60">
-          Cloud9 Saree Exhibition · 2026
+          Sharandev Fashions SAREE EXHIBITION · 2026
         </p>
       </div>
     </div>

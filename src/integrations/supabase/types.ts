@@ -39,13 +39,15 @@ export type Database = {
         Row: {
           created_at: string
           entry_number: string
-          flat_no: string | null
           full_name: string
+          fully_paid: boolean
           id: string
           instagram1_done: boolean
           instagram2_done: boolean
           is_cloud9: boolean
           phone: string
+          total_bill: number
+          total_paid: number
           whatsapp: string
           whatsapp_done: boolean
           youtube_done: boolean
@@ -53,13 +55,15 @@ export type Database = {
         Insert: {
           created_at?: string
           entry_number?: string
-          flat_no?: string | null
           full_name: string
+          fully_paid?: boolean
           id?: string
           instagram1_done?: boolean
           instagram2_done?: boolean
           is_cloud9?: boolean
           phone: string
+          total_bill?: number
+          total_paid?: number
           whatsapp: string
           whatsapp_done?: boolean
           youtube_done?: boolean
@@ -67,13 +71,15 @@ export type Database = {
         Update: {
           created_at?: string
           entry_number?: string
-          flat_no?: string | null
           full_name?: string
+          fully_paid?: boolean
           id?: string
           instagram1_done?: boolean
           instagram2_done?: boolean
           is_cloud9?: boolean
           phone?: string
+          total_bill?: number
+          total_paid?: number
           whatsapp?: string
           whatsapp_done?: boolean
           youtube_done?: boolean
@@ -106,23 +112,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_add_registration: {
-        Args: {
-          _full_name: string
-          _is_cloud9: boolean
-          _phone: string
-          _whatsapp: string
-        }
-        Returns: {
-          created_at: string
-          entry_number: string
-          full_name: string
-          id: string
-          is_cloud9: boolean
-          phone: string
-          whatsapp: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -136,19 +125,23 @@ export type Database = {
       }
       register_entry: {
         Args: {
-          _flat_no?: string
           _full_name: string
+          _fully_paid?: boolean
           _is_cloud9: boolean
           _phone: string
+          _total_bill?: number
+          _total_paid?: number
           _whatsapp: string
         }
         Returns: {
           entry_number: string
-          flat_no: string
           full_name: string
+          fully_paid: boolean
           id: string
           is_cloud9: boolean
           phone: string
+          total_bill: number
+          total_paid: number
           whatsapp: string
         }[]
       }

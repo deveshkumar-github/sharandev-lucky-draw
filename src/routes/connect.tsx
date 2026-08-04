@@ -69,7 +69,9 @@ function ConnectPage() {
       phone: reg!.phone,
       whatsapp: reg!.whatsapp,
       cloud9: reg!.is_cloud9 ? "Yes" : "No",
-      flat: reg!.flat_no || "-",
+      bill: String(reg!.total_bill ?? 0),
+      paid: String(reg!.total_paid ?? 0),
+      pending: String(Math.max(0, Number(reg!.total_bill ?? 0) - Number(reg!.total_paid ?? 0))),
     });
     const url = waLink(WA_PHONE, msg);
     if (tab) tab.location.href = url;
