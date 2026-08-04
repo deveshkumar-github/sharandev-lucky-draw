@@ -9,8 +9,9 @@ import {
   adminDeleteRegistration,
   adminListTemplates,
   adminSaveTemplate,
+  adminUpdatePayment,
 } from "@/lib/admin.functions";
-import { DEFAULT_TEMPLATES, fillTemplate, waLink } from "@/lib/templates";
+import { DEFAULT_TEMPLATES, fillTemplate, waLink, money } from "@/lib/templates";
 import logo from "@/assets/sharandev-logo.png";
 
 export const Route = createFileRoute("/admin")({
@@ -30,7 +31,9 @@ type Row = {
   phone: string;
   whatsapp: string;
   is_cloud9: boolean;
-  flat_no: string | null;
+  total_bill: number;
+  total_paid: number;
+  fully_paid: boolean;
   whatsapp_done: boolean;
   instagram1_done: boolean;
   instagram2_done: boolean;
@@ -137,16 +140,41 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showTpl, setShowTpl] = useState(false);
+  const [editRow, setEditRow] = useState<Row | null>(null);
   const [templates, setTemplates] = useState<Record<string, string>>(DEFAULT_TEMPLATES);
 
-  async function refresh() {
+  const [live, setLive] = useState(true);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+
+  async function refresh(silent = false) {
     try {
       const data = await adminListRegistrations({ data: { password: pw } });
-      setRows((data ?? []) as Row[]);
+      setRows((prev) => {
+        const next = (data ?? []) as Row[];
+        if (silent && next.length > prev.length) {
+          const added = next.length - prev.length;
+          toast.success(`${added} new registration${added > 1 ? "s" : ""} 🎉`);
+        }
+        return next;
+      });
+      setLastSync(new Date());
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load");
+      if (!silent) toast.error(e instanceof Error ? e.message : "Failed to load");
     }
   }
+
+  useEffect(() => {
+    if (!live) return;
+    const t = setInterval(() => refresh(true), 4000);
+    const onFocus = () => refresh(true);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, rows.length]);
+
   useEffect(() => {
     refresh();
     adminListTemplates({ data: { password: pw } })
@@ -172,7 +200,13 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     const cloud9 = rows.filter((r) => r.is_cloud9).length;
     const outside = total - cloud9;
     const wa = rows.filter((r) => r.whatsapp_done).length;
-    return { total, cloud9, outside, wa };
+    const billed = rows.reduce((a, r) => a + Number(r.total_bill || 0), 0);
+    const collected = rows.reduce((a, r) => a + Number(r.total_paid || 0), 0);
+    const pending = Math.max(0, billed - collected);
+    const pendingCount = rows.filter(
+      (r) => Number(r.total_bill || 0) - Number(r.total_paid || 0) > 0,
+    ).length;
+    return { total, cloud9, outside, wa, billed, collected, pending, pendingCount };
   }, [rows]);
 
   function pickWinners() {
@@ -208,14 +242,16 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
       whatsapp: r.whatsapp,
       entry: r.entry_number,
       cloud9: r.is_cloud9 ? "Yes" : "No",
-      flat: r.flat_no || "-",
+      bill: money(r.total_bill),
+      paid: money(r.total_paid),
+      pending: money(Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))),
       prize: prize || "",
     });
     window.open(waLink(r.whatsapp || r.phone, msg), "_blank");
   }
 
   function exportCSV() {
-    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Flat No", "WA Msg", "IG1", "IG2", "YT", "Date"];
+    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Total Bill", "Total Paid", "Pending", "Fully Paid", "WA Msg", "IG1", "IG2", "YT", "Date"];
     const lines = [header.join(",")].concat(
       filtered.map((r) =>
         [
@@ -224,7 +260,10 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           r.phone,
           r.whatsapp,
           r.is_cloud9 ? "Yes" : "No",
-          csv(r.flat_no || ""),
+          String(r.total_bill ?? 0),
+          String(r.total_paid ?? 0),
+          String(Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))),
+          r.fully_paid ? "Yes" : "No",
           r.whatsapp_done ? "Yes" : "No",
           r.instagram1_done ? "Yes" : "No",
           r.instagram2_done ? "Yes" : "No",
@@ -242,12 +281,12 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         (r) =>
           `<tr><td>${r.entry_number}</td><td>${esc(r.full_name)}</td><td>${r.phone}</td><td>${r.whatsapp}</td><td>${
             r.is_cloud9 ? "Yes" : "No"
-          }</td><td>${esc(r.flat_no || "")}</td><td>${r.whatsapp_done ? "Yes" : "No"}</td><td>${r.instagram1_done ? "Yes" : "No"}</td><td>${
+          }</td><td>${r.total_bill ?? 0}</td><td>${r.total_paid ?? 0}</td><td>${Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))}</td><td>${r.fully_paid ? "Yes" : "No"}</td><td>${r.whatsapp_done ? "Yes" : "No"}</td><td>${r.instagram1_done ? "Yes" : "No"}</td><td>${
             r.instagram2_done ? "Yes" : "No"
           }</td><td>${r.youtube_done ? "Yes" : "No"}</td><td>${new Date(r.created_at).toLocaleString()}</td></tr>`,
       )
       .join("");
-    const html = `<table border="1"><tr><th>Entry</th><th>Name</th><th>Phone</th><th>WhatsApp</th><th>Cloud9</th><th>Flat No</th><th>WA</th><th>IG1</th><th>IG2</th><th>YT</th><th>Date</th></tr>${rowsHtml}</table>`;
+    const html = `<table border="1"><tr><th>Entry</th><th>Name</th><th>Phone</th><th>WhatsApp</th><th>Cloud9</th><th>Total Bill</th><th>Total Paid</th><th>Pending</th><th>Fully Paid</th><th>WA</th><th>IG1</th><th>IG2</th><th>YT</th><th>Date</th></tr>${rowsHtml}</table>`;
     download("registrations.xls", html, "application/vnd.ms-excel");
   }
 
@@ -262,7 +301,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
               Lucky Draw Dashboard
             </h1>
             <p className="font-serif-lux text-base italic text-muted-foreground">
-              Sharandev Fashions — Cloud9 Saree Exhibition
+              Sharandev Fashions SAREE EXHIBITION
             </p>
           </div>
           <button
@@ -273,12 +312,41 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <Stat label="Total Registrations" value={stats.total} accent />
-          <Stat label="Cloud9 Members" value={stats.cloud9} />
-          <Stat label="Outside Visitors" value={stats.outside} />
-          <Stat label="WhatsApp Messages" value={stats.wa} />
-          <Stat label="Lucky Draw Entries" value={stats.total} />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat label="Total Registrations" value={String(stats.total)} accent />
+          <Stat label="Cloud9 Members" value={String(stats.cloud9)} />
+          <Stat label="Outside Visitors" value={String(stats.outside)} />
+          <Stat label="WhatsApp Messages" value={String(stats.wa)} />
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat label="Total Billed" value={`₹${money(stats.billed)}`} accent />
+          <Stat label="Total Collected" value={`₹${money(stats.collected)}`} />
+          <Stat label="Pending Amount" value={`₹${money(stats.pending)}`} danger />
+          <Stat label="Pending Customers" value={String(stats.pendingCount)} />
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
+          <span className="relative flex h-2.5 w-2.5">
+            {live && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
+            )}
+            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${live ? "bg-primary" : "bg-muted-foreground"}`} />
+          </span>
+          <span className="text-sm font-bold text-maroon">
+            {live ? "Live — auto updating" : "Live updates paused"}
+          </span>
+          {lastSync && (
+            <span className="text-xs text-muted-foreground">
+              Last sync {lastSync.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={() => setLive((v) => !v)}
+            className="ml-auto rounded-xl border border-border px-3 py-1.5 text-xs font-bold text-maroon"
+          >
+            {live ? "Pause" : "Resume"}
+          </button>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-[1fr_auto_auto_auto_auto_auto]">
@@ -319,7 +387,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
             <table className="w-full text-sm">
               <thead className="gradient-festive text-primary-foreground">
                 <tr>
-                  {["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Flat No", "Date & Time", "Actions"].map((h) => (
+                  {["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Bill", "Paid", "Pending", "Date & Time", "Actions"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-bold">
                       {h}
                     </th>
@@ -334,7 +402,19 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                     <td className="px-4 py-3">{r.phone}</td>
                     <td className="px-4 py-3">{r.whatsapp}</td>
                     <td className="px-4 py-3">{r.is_cloud9 ? "✅ Yes" : "❌ No"}</td>
-                    <td className="px-4 py-3">{r.flat_no || "—"}</td>
+                    <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_bill)}</td>
+                    <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_paid)}</td>
+                    <td className="px-4 py-3">
+                      {Number(r.total_bill || 0) - Number(r.total_paid || 0) > 0 ? (
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 font-ticket text-xs font-black text-primary">
+                          ₹{money(Number(r.total_bill || 0) - Number(r.total_paid || 0))}
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                          Paid ✓
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -344,6 +424,13 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                           className="grid h-9 w-9 place-items-center rounded-full bg-[#25D366] text-white shadow-md transition hover:brightness-110 active:scale-90"
                         >
                           <WhatsAppIcon />
+                        </button>
+                        <button
+                          title="Edit payment"
+                          onClick={() => setEditRow(r)}
+                          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-maroon transition active:scale-90"
+                        >
+                          💰
                         </button>
                         <button
                           title="Delete"
@@ -358,7 +445,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">
                       No registrations yet.
                     </td>
                   </tr>
@@ -377,6 +464,19 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
             setRows((prev) => [row, ...prev]);
             setShowAdd(false);
             toast.success(`Added ${row.entry_number}`);
+          }}
+        />
+      )}
+
+      {editRow && (
+        <PaymentModal
+          pw={pw}
+          row={editRow}
+          onClose={() => setEditRow(null)}
+          onSaved={(row) => {
+            setRows((prev) => prev.map((x) => (x.id === row.id ? row : x)));
+            setEditRow(null);
+            toast.success("Payment updated");
           }}
         />
       )}
@@ -409,7 +509,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                   <div className="mt-1 font-display text-2xl font-black text-maroon">{w.full_name}</div>
                   <div className="font-ticket text-sm font-bold text-primary">{w.entry_number}</div>
                   <div className="mt-1 text-xs text-maroon/70">
-                    📱 {w.phone} · {w.is_cloud9 ? `Cloud9${w.flat_no ? ` · ${w.flat_no}` : ""}` : "Visitor"}
+                    📱 {w.phone} · {w.is_cloud9 ? "Cloud9" : "Visitor"} · Bill ₹{money(w.total_bill)}
                   </div>
                   <button
                     onClick={() => openChat(w, PRIZES[i])}
@@ -442,9 +542,11 @@ function TemplateModal({
   onSaved: (key: string, value: string) => void;
 }) {
   const items = [
-    { key: "wa_register_template", label: "Customer → Shop (registration message)", vars: "{name} {phone} {whatsapp} {cloud9} {flat}" },
-    { key: "wa_customer_template", label: "Admin → Customer (thank you)", vars: "{name} {entry} {phone} {flat}" },
-    { key: "wa_winner_template", label: "Admin → Winner (announcement)", vars: "{name} {entry} {prize}" },
+    { key: "coupon_title", label: "Coupon Title (shown on the lucky draw coupon)", vars: "plain text", rows: 2 },
+    { key: "coupon_subtitle", label: "Coupon Sub-title", vars: "plain text", rows: 2 },
+    { key: "wa_register_template", label: "Customer → Shop (registration message)", vars: "{name} {phone} {whatsapp} {cloud9} {bill} {paid} {pending}", rows: 6 },
+    { key: "wa_customer_template", label: "Admin → Customer (thank you)", vars: "{name} {entry} {phone} {bill} {paid} {pending}", rows: 6 },
+    { key: "wa_winner_template", label: "Admin → Winner (announcement)", vars: "{name} {entry} {prize}", rows: 6 },
   ];
   const [draft, setDraft] = useState<Record<string, string>>({ ...DEFAULT_TEMPLATES, ...templates });
   const [saving, setSaving] = useState<string | null>(null);
@@ -465,7 +567,7 @@ function TemplateModal({
   return (
     <div className="fixed inset-0 z-40 grid place-items-start overflow-y-auto bg-black/60 px-4 py-8" onClick={onClose}>
       <div className="mx-auto w-full max-w-2xl rounded-3xl bg-white p-6 shadow-festive" onClick={(e) => e.stopPropagation()}>
-        <h2 className="font-display text-2xl font-black text-maroon">WhatsApp Templates</h2>
+        <h2 className="font-display text-2xl font-black text-maroon">Coupon &amp; WhatsApp Settings</h2>
         <p className="mt-1 text-sm text-muted-foreground">Edit the messages sent from the app. Placeholders are replaced automatically.</p>
         <div className="mt-4 space-y-5">
           {items.map((it) => (
@@ -473,7 +575,7 @@ function TemplateModal({
               <div className="text-sm font-bold text-maroon">{it.label}</div>
               <div className="mb-2 font-ticket text-xs text-muted-foreground">{it.vars}</div>
               <textarea
-                rows={6}
+                rows={it.rows}
                 value={draft[it.key] ?? ""}
                 onChange={(e) => setDraft((p) => ({ ...p, [it.key]: e.target.value }))}
                 className="w-full rounded-xl border border-border px-4 py-3 text-sm outline-none focus:border-gold"
@@ -509,7 +611,9 @@ function AddEntryModal({
   const [phone, setPhone] = useState("");
   const [whatsapp, setWa] = useState("");
   const [is_cloud9, setC9] = useState(false);
-  const [flat_no, setFlat] = useState("");
+  const [bill, setBill] = useState("");
+  const [paid, setPaid] = useState("");
+  const [fullPaid, setFullPaid] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function submit() {
@@ -523,7 +627,9 @@ function AddEntryModal({
           phone,
           whatsapp: whatsapp || phone,
           is_cloud9,
-          flat_no: is_cloud9 ? flat_no : "",
+          total_bill: Number(bill) || 0,
+          total_paid: Number(paid) || 0,
+          fully_paid: fullPaid,
         },
       });
       onAdded(row as Row);
@@ -565,14 +671,32 @@ function AddEntryModal({
             <input type="checkbox" checked={is_cloud9} onChange={(e) => setC9(e.target.checked)} />
             Cloud9 Resident
           </label>
-          {is_cloud9 && (
+          <input
+            className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
+            placeholder="Total Bill (₹)"
+            inputMode="decimal"
+            value={bill}
+            onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
+          />
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={fullPaid} onChange={(e) => setFullPaid(e.target.checked)} />
+            Fully paid
+          </label>
+          {!fullPaid && (
             <input
               className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
-              placeholder="Flat No. (optional)"
-              value={flat_no}
-              onChange={(e) => setFlat(e.target.value)}
+              placeholder="Total Paid (₹)"
+              inputMode="decimal"
+              value={paid}
+              onChange={(e) => setPaid(e.target.value.replace(/[^0-9.]/g, ""))}
             />
           )}
+          <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2 text-sm">
+            <span className="font-semibold text-maroon">Pending</span>
+            <span className="font-ticket font-black text-primary">
+              ₹{Math.max(0, (Number(bill) || 0) - (fullPaid ? Number(bill) || 0 : Number(paid) || 0)).toLocaleString("en-IN")}
+            </span>
+          </div>
         </div>
         <div className="mt-6 flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon">
@@ -591,15 +715,29 @@ function AddEntryModal({
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function Stat({
+  label,
+  value,
+  accent,
+  danger,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  danger?: boolean;
+}) {
   return (
     <div
       className={`rounded-2xl p-4 shadow-gold ${
-        accent ? "gradient-festive text-primary-foreground" : "border border-border bg-white text-maroon"
+        accent
+          ? "gradient-festive text-primary-foreground"
+          : danger
+            ? "border border-primary/40 bg-primary/5 text-primary"
+            : "border border-border bg-white text-maroon"
       }`}
     >
       <div className="text-xs font-semibold uppercase tracking-wider opacity-80">{label}</div>
-      <div className="mt-1 font-display text-3xl font-black">{value}</div>
+      <div className="mt-1 font-display text-2xl font-black sm:text-3xl">{value}</div>
     </div>
   );
 }
@@ -618,4 +756,90 @@ function download(name: string, content: string, type: string) {
   a.download = name;
   a.click();
   URL.revokeObjectURL(url);
+}
+function PaymentModal({
+  pw,
+  row,
+  onClose,
+  onSaved,
+}: {
+  pw: string;
+  row: Row;
+  onClose: () => void;
+  onSaved: (r: Row) => void;
+}) {
+  const [bill, setBill] = useState(String(row.total_bill ?? 0));
+  const [paid, setPaid] = useState(String(row.total_paid ?? 0));
+  const [fullPaid, setFullPaid] = useState(!!row.fully_paid);
+  const [loading, setLoading] = useState(false);
+  const pending = Math.max(0, (Number(bill) || 0) - (fullPaid ? Number(bill) || 0 : Number(paid) || 0));
+
+  async function save() {
+    setLoading(true);
+    try {
+      const updated = await adminUpdatePayment({
+        data: {
+          password: pw,
+          id: row.id,
+          total_bill: Number(bill) || 0,
+          total_paid: Number(paid) || 0,
+          fully_paid: fullPaid,
+        },
+      });
+      onSaved(updated as Row);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 grid place-items-center bg-black/60 px-5" onClick={onClose}>
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-festive" onClick={(e) => e.stopPropagation()}>
+        <h2 className="font-display text-2xl font-black text-maroon">Update Payment</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {row.entry_number} · {row.full_name}
+        </p>
+        <div className="mt-4 space-y-3">
+          <input
+            className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
+            placeholder="Total Bill (₹)"
+            inputMode="decimal"
+            value={bill}
+            onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
+          />
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={fullPaid} onChange={(e) => setFullPaid(e.target.checked)} />
+            Fully paid
+          </label>
+          {!fullPaid && (
+            <input
+              className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
+              placeholder="Total Paid (₹)"
+              inputMode="decimal"
+              value={paid}
+              onChange={(e) => setPaid(e.target.value.replace(/[^0-9.]/g, ""))}
+            />
+          )}
+          <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2 text-sm">
+            <span className="font-semibold text-maroon">Pending</span>
+            <span className="font-ticket font-black text-primary">₹{money(pending)}</span>
+          </div>
+        </div>
+        <div className="mt-6 flex gap-2">
+          <button onClick={onClose} className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon">
+            Cancel
+          </button>
+          <button
+            disabled={loading}
+            onClick={save}
+            className="flex-1 rounded-2xl gradient-festive px-4 py-3 font-bold text-primary-foreground disabled:opacity-50"
+          >
+            {loading ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
