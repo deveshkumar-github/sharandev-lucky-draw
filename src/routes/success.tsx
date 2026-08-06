@@ -54,17 +54,33 @@ function SuccessPage() {
           You&apos;re entered in the Lucky Draw
         </p>
 
-        {/* Modern coupon */}
+        {/* Premium coupon */}
         <div className="animate-gift-open relative mt-8 w-full">
-          <div className="rounded-[30px] gradient-gold p-[1.5px] shadow-gold">
+          <div className="rounded-[30px] gradient-gold p-[2px] shadow-gold">
             <div className="coupon-paper relative overflow-hidden rounded-[29px] text-maroon">
+              {/* subtle guilloche texture */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.07]"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, var(--maroon) 0 1px, transparent 1px 9px), repeating-linear-gradient(-45deg, var(--maroon) 0 1px, transparent 1px 9px)",
+                }}
+              />
               {/* header band */}
-              <div className="gradient-festive px-6 py-5 text-primary-foreground">
+              <div className="relative gradient-festive px-6 py-5 text-primary-foreground">
+                <div className="pointer-events-none absolute inset-x-6 bottom-0 h-px bg-gold/60" />
                 <div className="font-ticket text-[9px] font-black uppercase tracking-[0.42em] opacity-80">
                   {subtitle}
                 </div>
                 <div className="mt-1 font-display text-lg font-black uppercase leading-tight tracking-[0.12em]">
                   {title}
+                </div>
+                <div className="mx-auto mt-2 flex items-center justify-center gap-2 opacity-90">
+                  <span className="h-px w-8 bg-gold/70" />
+                  <span className="font-ticket text-[8px] font-black uppercase tracking-[0.35em] text-gold">
+                    Official Entry
+                  </span>
+                  <span className="h-px w-8 bg-gold/70" />
                 </div>
               </div>
 
@@ -75,25 +91,36 @@ function SuccessPage() {
                 <div className="mx-6 border-t-2 border-dashed border-maroon/25" />
               </div>
 
-              <div className="px-6 pb-7 pt-6">
+              <div className="relative px-6 pb-7 pt-6">
                 <div className="font-ticket text-[10px] font-bold uppercase tracking-[0.4em] text-maroon/50">
                   Entry Number
                 </div>
-                <div className="mt-1 font-ticket text-[58px] font-black leading-none tracking-[0.08em] tabular-nums text-maroon">
-                  {reg.entry_number}
+                <div className="mt-2 inline-block rounded-2xl border border-gold/50 bg-maroon/[0.04] px-5 py-2">
+                  <div className="font-ticket text-[56px] font-black leading-none tracking-[0.08em] tabular-nums text-maroon">
+                    {reg.entry_number}
+                  </div>
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-3 text-left">
                   <Cell label="Name" value={reg.full_name} />
                   <Cell label="Issued" value={date} small />
                   <Cell label="Total Bill" value={`₹${money(bill)}`} />
+                  {reg.bill_no ? <Cell label="Bill No" value={String(reg.bill_no)} /> : null}
                   <Cell
                     label={pending > 0 ? "Pending" : "Status"}
                     value={pending > 0 ? `₹${money(pending)}` : "Fully Paid ✓"}
                   />
                 </div>
 
-                <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-maroon/5 py-3 font-ticket text-[10px] font-bold uppercase tracking-[0.24em] text-maroon/70">
+                <div
+                  className="mt-6 h-8 w-full opacity-70"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(90deg, var(--maroon) 0 2px, transparent 2px 4px, var(--maroon) 4px 5px, transparent 5px 9px)",
+                  }}
+                  aria-hidden="true"
+                />
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-maroon/5 py-3 font-ticket text-[10px] font-bold uppercase tracking-[0.24em] text-maroon/70">
                   3 Winners · 1st Prize ₹5,000 Saree
                 </div>
               </div>
