@@ -21,6 +21,7 @@ const schema = z.object({
   phone: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid phone number"),
   whatsapp: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, "Enter a valid WhatsApp number"),
   is_cloud9: z.boolean(),
+  bill_no: z.string().trim().max(40),
   total_bill: z.number().min(0).max(10000000),
   total_paid: z.number().min(0).max(10000000),
   fully_paid: z.boolean(),
@@ -34,6 +35,7 @@ function RegisterPage() {
   const [wa, setWa] = useState("");
   const [cloud9, setCloud9] = useState<null | boolean>(null);
   const [bill, setBill] = useState("");
+  const [billNo, setBillNo] = useState("");
   const [paid, setPaid] = useState("");
   const [fullPaid, setFullPaid] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,7 @@ function RegisterPage() {
       phone,
       whatsapp,
       is_cloud9: !!cloud9,
+      bill_no: billNo,
       total_bill: billNum,
       total_paid: Math.min(paidNum, billNum),
       fully_paid: fullPaid,
@@ -69,6 +72,7 @@ function RegisterPage() {
       _total_bill: parsed.data.total_bill,
       _total_paid: parsed.data.total_paid,
       _fully_paid: parsed.data.fully_paid,
+      _bill_no: parsed.data.bill_no,
     });
     const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
@@ -131,15 +135,26 @@ function RegisterPage() {
             onChange={setCloud9}
           />
 
-          <Field label="Total Bill Amount (₹) *">
-            <input
-              className="input-lg"
-              inputMode="decimal"
-              value={bill}
-              onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
-              placeholder="e.g. 5000"
-            />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Total Bill Amount (₹) *">
+              <input
+                className="input-lg"
+                inputMode="decimal"
+                value={bill}
+                onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
+                placeholder="e.g. 5000"
+              />
+            </Field>
+            <Field label="Bill No">
+              <input
+                className="input-lg"
+                value={billNo}
+                onChange={(e) => setBillNo(e.target.value)}
+                placeholder="e.g. 1042"
+                maxLength={40}
+              />
+            </Field>
+          </div>
 
           <label className="flex items-center gap-3 rounded-2xl border-2 border-border bg-white px-4 py-4">
             <input
