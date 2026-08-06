@@ -508,6 +508,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
 
       {showAdd && (
         <AddEntryModal
+
           pw={pw}
           onClose={() => setShowAdd(false)}
           onAdded={(row) => {
