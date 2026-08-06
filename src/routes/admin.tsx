@@ -340,12 +340,23 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           <Stat label="WhatsApp Messages" value={String(stats.wa)} />
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Total Billed" value={`₹${money(stats.billed)}`} accent />
-          <Stat label="Total Collected" value={`₹${money(stats.collected)}`} />
-          <Stat label="Pending Amount" value={`₹${money(stats.pending)}`} danger />
-          <Stat label="Pending Customers" value={String(stats.pendingCount)} />
+        <div className="mt-3 flex justify-end">
+          <button
+            onClick={toggleMoney}
+            className="rounded-xl border border-border bg-white px-4 py-2 text-xs font-bold text-maroon"
+          >
+            {showMoney ? "🙈 Hide amounts" : "👁️ Show amounts"}
+          </button>
         </div>
+
+        {showMoney && (
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Total Billed" value={`₹${money(stats.billed)}`} accent />
+            <Stat label="Total Collected" value={`₹${money(stats.collected)}`} />
+            <Stat label="Pending Amount" value={`₹${money(stats.pending)}`} danger />
+            <Stat label="Pending Customers" value={String(stats.pendingCount)} />
+          </div>
+        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
           <span className="relative flex h-2.5 w-2.5">
@@ -408,7 +419,17 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
             <table className="w-full text-sm">
               <thead className="gradient-festive text-primary-foreground">
                 <tr>
-                  {["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Bill", "Paid", "Pending", "Date & Time", "Actions"].map((h) => (
+                  {[
+                    "Entry",
+                    "Name",
+                    "Phone",
+                    "WhatsApp",
+                    "Cloud9",
+                    "Bill No",
+                    ...(showMoney ? ["Bill", "Paid", "Pending"] : []),
+                    "Date & Time",
+                    "Actions",
+                  ].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-bold">
                       {h}
                     </th>
@@ -423,19 +444,24 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                     <td className="px-4 py-3">{r.phone}</td>
                     <td className="px-4 py-3">{r.whatsapp}</td>
                     <td className="px-4 py-3">{r.is_cloud9 ? "✅ Yes" : "❌ No"}</td>
-                    <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_bill)}</td>
-                    <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_paid)}</td>
-                    <td className="px-4 py-3">
-                      {Number(r.total_bill || 0) - Number(r.total_paid || 0) > 0 ? (
-                        <span className="rounded-full bg-primary/10 px-2.5 py-1 font-ticket text-xs font-black text-primary">
-                          ₹{money(Number(r.total_bill || 0) - Number(r.total_paid || 0))}
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                          Paid ✓
-                        </span>
-                      )}
-                    </td>
+                    <td className="px-4 py-3 font-ticket">{r.bill_no || "—"}</td>
+                    {showMoney && (
+                      <>
+                        <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_bill)}</td>
+                        <td className="px-4 py-3 font-ticket font-bold">₹{money(r.total_paid)}</td>
+                        <td className="px-4 py-3">
+                          {Number(r.total_bill || 0) - Number(r.total_paid || 0) > 0 ? (
+                            <span className="rounded-full bg-primary/10 px-2.5 py-1 font-ticket text-xs font-black text-primary">
+                              ₹{money(Number(r.total_bill || 0) - Number(r.total_paid || 0))}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                              Paid ✓
+                            </span>
+                          )}
+                        </td>
+                      </>
+                    )}
                     <td className="px-4 py-3 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -466,7 +492,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={showMoney ? 11 : 8} className="px-4 py-10 text-center text-muted-foreground">
                       No registrations yet.
                     </td>
                   </tr>
@@ -633,6 +659,7 @@ function AddEntryModal({
   const [whatsapp, setWa] = useState("");
   const [is_cloud9, setC9] = useState(false);
   const [bill, setBill] = useState("");
+  const [billNo, setBillNo] = useState("");
   const [paid, setPaid] = useState("");
   const [fullPaid, setFullPaid] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -648,6 +675,7 @@ function AddEntryModal({
           phone,
           whatsapp: whatsapp || phone,
           is_cloud9,
+          bill_no: billNo,
           total_bill: Number(bill) || 0,
           total_paid: Number(paid) || 0,
           fully_paid: fullPaid,
@@ -698,6 +726,13 @@ function AddEntryModal({
             inputMode="decimal"
             value={bill}
             onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))}
+          />
+          <input
+            className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold"
+            placeholder="Bill No"
+            value={billNo}
+            maxLength={40}
+            onChange={(e) => setBillNo(e.target.value)}
           />
           <label className="flex items-center gap-2 text-sm text-maroon">
             <input type="checkbox" checked={fullPaid} onChange={(e) => setFullPaid(e.target.checked)} />
