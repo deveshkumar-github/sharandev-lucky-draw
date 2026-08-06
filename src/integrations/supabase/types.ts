@@ -37,6 +37,7 @@ export type Database = {
       }
       registrations: {
         Row: {
+          bill_no: string
           created_at: string
           entry_number: string
           full_name: string
@@ -53,6 +54,7 @@ export type Database = {
           youtube_done: boolean
         }
         Insert: {
+          bill_no?: string
           created_at?: string
           entry_number?: string
           full_name: string
@@ -69,6 +71,7 @@ export type Database = {
           youtube_done?: boolean
         }
         Update: {
+          bill_no?: string
           created_at?: string
           entry_number?: string
           full_name?: string
@@ -123,28 +126,53 @@ export type Database = {
         Args: { _id: string; _step: string }
         Returns: undefined
       }
-      register_entry: {
-        Args: {
-          _full_name: string
-          _fully_paid?: boolean
-          _is_cloud9: boolean
-          _phone: string
-          _total_bill?: number
-          _total_paid?: number
-          _whatsapp: string
-        }
-        Returns: {
-          entry_number: string
-          full_name: string
-          fully_paid: boolean
-          id: string
-          is_cloud9: boolean
-          phone: string
-          total_bill: number
-          total_paid: number
-          whatsapp: string
-        }[]
-      }
+      register_entry:
+        | {
+            Args: {
+              _full_name: string
+              _fully_paid?: boolean
+              _is_cloud9: boolean
+              _phone: string
+              _total_bill?: number
+              _total_paid?: number
+              _whatsapp: string
+            }
+            Returns: {
+              entry_number: string
+              full_name: string
+              fully_paid: boolean
+              id: string
+              is_cloud9: boolean
+              phone: string
+              total_bill: number
+              total_paid: number
+              whatsapp: string
+            }[]
+          }
+        | {
+            Args: {
+              _bill_no?: string
+              _full_name: string
+              _fully_paid?: boolean
+              _is_cloud9: boolean
+              _phone: string
+              _total_bill?: number
+              _total_paid?: number
+              _whatsapp: string
+            }
+            Returns: {
+              bill_no: string
+              entry_number: string
+              full_name: string
+              fully_paid: boolean
+              id: string
+              is_cloud9: boolean
+              phone: string
+              total_bill: number
+              total_paid: number
+              whatsapp: string
+            }[]
+          }
     }
     Enums: {
       app_role: "admin"

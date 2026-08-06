@@ -8,6 +8,7 @@ export type PendingReg = {
   total_bill?: number | null;
   total_paid?: number | null;
   fully_paid?: boolean | null;
+  bill_no?: string | null;
 };
 
 const KEY = "sharandev_lucky_draw";

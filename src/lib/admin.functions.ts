@@ -33,6 +33,7 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
     phone: string;
     whatsapp: string;
     is_cloud9: boolean;
+    bill_no?: string;
     total_bill?: number;
     total_paid?: number;
     fully_paid?: boolean;
@@ -54,6 +55,7 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
         phone: data.phone.trim(),
         whatsapp: data.whatsapp.trim(),
         is_cloud9: !!data.is_cloud9,
+        bill_no: (data.bill_no ?? "").trim().slice(0, 40),
         total_bill: bill,
         total_paid: paid,
         fully_paid: bill > 0 && paid >= bill,

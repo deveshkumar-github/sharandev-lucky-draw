@@ -80,19 +80,6 @@ function Landing() {
           🎁  Join the Lucky Draw
         </Link>
 
-        <div className="mt-8 grid w-full grid-cols-3 gap-3 text-center text-white/90">
-          {[
-            { n: "30s", l: "Quick Entry" },
-            { n: "🎁", l: "Premium Gifts" },
-            { n: "100%", l: "Free" },
-          ].map((s) => (
-            <div key={s.l} className="rounded-2xl border border-gold/30 bg-white/5 px-2 py-3 backdrop-blur-sm">
-              <div className="font-display text-2xl font-bold text-gold">{s.n}</div>
-              <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/70">{s.l}</div>
-            </div>
-          ))}
-        </div>
-
         <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/60">
           Sharandev Fashions SAREE EXHIBITION · 2026
         </p>
