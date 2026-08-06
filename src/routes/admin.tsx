@@ -305,12 +305,12 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         (r) =>
           `<tr><td>${r.entry_number}</td><td>${esc(r.full_name)}</td><td>${r.phone}</td><td>${r.whatsapp}</td><td>${
             r.is_cloud9 ? "Yes" : "No"
-          }</td><td>${r.total_bill ?? 0}</td><td>${r.total_paid ?? 0}</td><td>${Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))}</td><td>${r.fully_paid ? "Yes" : "No"}</td><td>${r.whatsapp_done ? "Yes" : "No"}</td><td>${r.instagram1_done ? "Yes" : "No"}</td><td>${
+          }</td><td>${esc(r.bill_no ?? "")}</td><td>${r.total_bill ?? 0}</td><td>${r.total_paid ?? 0}</td><td>${Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))}</td><td>${r.fully_paid ? "Yes" : "No"}</td><td>${r.whatsapp_done ? "Yes" : "No"}</td><td>${r.instagram1_done ? "Yes" : "No"}</td><td>${
             r.instagram2_done ? "Yes" : "No"
           }</td><td>${r.youtube_done ? "Yes" : "No"}</td><td>${new Date(r.created_at).toLocaleString()}</td></tr>`,
       )
       .join("");
-    const html = `<table border="1"><tr><th>Entry</th><th>Name</th><th>Phone</th><th>WhatsApp</th><th>Cloud9</th><th>Total Bill</th><th>Total Paid</th><th>Pending</th><th>Fully Paid</th><th>WA</th><th>IG1</th><th>IG2</th><th>YT</th><th>Date</th></tr>${rowsHtml}</table>`;
+    const html = `<table border="1"><tr><th>Entry</th><th>Name</th><th>Phone</th><th>WhatsApp</th><th>Cloud9</th><th>Bill No</th><th>Total Bill</th><th>Total Paid</th><th>Pending</th><th>Fully Paid</th><th>WA</th><th>IG1</th><th>IG2</th><th>YT</th><th>Date</th></tr>${rowsHtml}</table>`;
     download("registrations.xls", html, "application/vnd.ms-excel");
   }
 
