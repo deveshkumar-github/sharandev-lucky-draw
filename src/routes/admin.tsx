@@ -212,7 +212,9 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     const s = q.trim().toLowerCase();
     if (!s) return rows;
     return rows.filter((r) =>
-      [r.full_name, r.phone, r.whatsapp, r.entry_number].some((v) => v.toLowerCase().includes(s)),
+      [r.full_name, r.phone, r.whatsapp, r.entry_number, r.bill_no ?? ""].some((v) =>
+        v.toLowerCase().includes(s),
+      ),
     );
   }, [q, rows]);
 
@@ -272,7 +274,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   }
 
   function exportCSV() {
-    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Total Bill", "Total Paid", "Pending", "Fully Paid", "WA Msg", "IG1", "IG2", "YT", "Date"];
+    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Bill No", "Total Bill", "Total Paid", "Pending", "Fully Paid", "WA Msg", "IG1", "IG2", "YT", "Date"];
     const lines = [header.join(",")].concat(
       filtered.map((r) =>
         [
@@ -281,6 +283,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           r.phone,
           r.whatsapp,
           r.is_cloud9 ? "Yes" : "No",
+          csv(r.bill_no ?? ""),
           String(r.total_bill ?? 0),
           String(r.total_paid ?? 0),
           String(Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))),
