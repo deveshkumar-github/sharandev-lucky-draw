@@ -506,9 +506,42 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         </div>
       </div>
 
+      {notices.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-50 w-[19rem] space-y-2">
+          {notices.map((n) => (
+            <div
+              key={n.id}
+              className="animate-gift-open rounded-2xl border border-gold/50 bg-white p-3 shadow-festive"
+            >
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-ticket text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                    New Entry · {n.entry_number}
+                  </div>
+                  <div className="truncate font-display text-lg font-black text-maroon">{n.full_name}</div>
+                  <div className="text-xs text-maroon/70">📱 {n.whatsapp || n.phone}</div>
+                </div>
+                <button
+                  onClick={() => setNotices((c) => c.filter((x) => x.id !== n.id))}
+                  className="text-sm text-muted-foreground"
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+              <button
+                onClick={() => openChat(n)}
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 py-2 text-sm font-bold text-white active:scale-95"
+              >
+                <WhatsAppIcon className="h-4 w-4" /> Send WhatsApp
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {showAdd && (
         <AddEntryModal
-
           pw={pw}
           onClose={() => setShowAdd(false)}
           onAdded={(row) => {
