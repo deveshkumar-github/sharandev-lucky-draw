@@ -31,6 +31,7 @@ type Row = {
   phone: string;
   whatsapp: string;
   is_cloud9: boolean;
+  bill_no?: string | null;
   total_bill: number;
   total_paid: number;
   fully_paid: boolean;
@@ -42,6 +43,7 @@ type Row = {
 };
 
 const PW_KEY = "sharandev_admin_pw";
+const MONEY_KEY = "sharandev_admin_show_money";
 
 const PRIZES = [
   "1st Prize — Saree worth ₹5,000/-",
@@ -145,15 +147,34 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
 
   const [live, setLive] = useState(true);
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [showMoney, setShowMoney] = useState(true);
+  const [notices, setNotices] = useState<Row[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined")
+      setShowMoney(localStorage.getItem(MONEY_KEY) !== "0");
+  }, []);
+
+  function toggleMoney() {
+    setShowMoney((v) => {
+      const next = !v;
+      localStorage.setItem(MONEY_KEY, next ? "1" : "0");
+      return next;
+    });
+  }
 
   async function refresh(silent = false) {
     try {
       const data = await adminListRegistrations({ data: { password: pw } });
       setRows((prev) => {
         const next = (data ?? []) as Row[];
-        if (silent && next.length > prev.length) {
-          const added = next.length - prev.length;
-          toast.success(`${added} new registration${added > 1 ? "s" : ""} 🎉`);
+        if (silent && prev.length) {
+          const known = new Set(prev.map((p) => p.id));
+          const fresh = next.filter((n) => !known.has(n.id));
+          if (fresh.length) {
+            setNotices((cur) => [...fresh, ...cur].slice(0, 6));
+            toast.success(`${fresh.length} new registration${fresh.length > 1 ? "s" : ""} 🎉`);
+          }
         }
         return next;
       });
