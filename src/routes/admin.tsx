@@ -369,6 +369,49 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           </button>
         </div>
 
+        {askMoneyPw && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <form
+              onSubmit={submitMoneyPw}
+              className="w-full max-w-sm rounded-2xl border border-border bg-white p-5 shadow-2xl"
+            >
+              <h3 className="text-lg font-bold text-maroon">Protected view</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Enter the password to view billing amounts.
+              </p>
+              <input
+                type="password"
+                autoFocus
+                value={moneyPw}
+                onChange={(e) => {
+                  setMoneyPw(e.target.value);
+                  setMoneyErr(false);
+                }}
+                placeholder="Password"
+                className="mt-3 w-full rounded-xl border border-border bg-white px-4 py-3 text-base text-maroon outline-none focus:border-gold"
+              />
+              {moneyErr && (
+                <p className="mt-2 text-xs font-semibold text-destructive">Incorrect password</p>
+              )}
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAskMoneyPw(false)}
+                  className="flex-1 rounded-xl border border-border px-4 py-2 text-sm font-bold text-maroon"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-maroon px-4 py-2 text-sm font-bold text-primary-foreground"
+                >
+                  Unlock
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {showMoney && (
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Total Billed" value={`₹${money(stats.billed)}`} accent />
