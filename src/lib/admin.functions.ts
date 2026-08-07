@@ -48,6 +48,15 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
     if (data.fully_paid) paid = bill;
     if (paid > bill) paid = bill;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const billNo = (data.bill_no ?? "").trim().slice(0, 40);
+    if (billNo) {
+      const { data: dupe } = await supabaseAdmin
+        .from("registrations")
+        .select("id")
+        .ilike("bill_no", billNo)
+        .limit(1);
+      if (dupe && dupe.length > 0) throw new Error(`Bill No ${billNo} is already registered`);
+    }
     const { data: row, error } = await supabaseAdmin
       .from("registrations")
       .insert({
@@ -55,14 +64,18 @@ export const adminAddRegistration = createServerFn({ method: "POST" })
         phone: data.phone.trim(),
         whatsapp: data.whatsapp.trim(),
         is_cloud9: !!data.is_cloud9,
-        bill_no: (data.bill_no ?? "").trim().slice(0, 40),
+        bill_no: billNo,
         total_bill: bill,
         total_paid: paid,
         fully_paid: bill > 0 && paid >= bill,
       })
       .select("*")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(
+        error.code === "23505" ? `Bill No ${billNo} is already registered` : error.message,
+      );
+    }
     return row;
   });
 
