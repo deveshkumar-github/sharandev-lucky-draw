@@ -148,19 +148,36 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [live, setLive] = useState(true);
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [showMoney, setShowMoney] = useState(true);
+  const [askMoneyPw, setAskMoneyPw] = useState(false);
+  const [moneyPw, setMoneyPw] = useState("");
+  const [moneyErr, setMoneyErr] = useState(false);
   const [notices, setNotices] = useState<Row[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined")
-      setShowMoney(localStorage.getItem(MONEY_KEY) !== "0");
+      setShowMoney(sessionStorage.getItem(MONEY_KEY) === "1");
   }, []);
 
   function toggleMoney() {
-    setShowMoney((v) => {
-      const next = !v;
-      localStorage.setItem(MONEY_KEY, next ? "1" : "0");
-      return next;
-    });
+    if (showMoney) {
+      setShowMoney(false);
+      sessionStorage.setItem(MONEY_KEY, "0");
+      return;
+    }
+    setMoneyPw("");
+    setMoneyErr(false);
+    setAskMoneyPw(true);
+  }
+
+  function submitMoneyPw(e: React.FormEvent) {
+    e.preventDefault();
+    if (moneyPw === "Sharandev@Money") {
+      setShowMoney(true);
+      sessionStorage.setItem(MONEY_KEY, "1");
+      setAskMoneyPw(false);
+    } else {
+      setMoneyErr(true);
+    }
   }
 
   async function refresh(silent = false) {
