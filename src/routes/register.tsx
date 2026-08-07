@@ -77,7 +77,12 @@ function RegisterPage() {
     const row = Array.isArray(data) ? data[0] : data;
     setLoading(false);
     if (error || !row) {
-      toast.error(error?.message || "Could not register. Please try again.");
+      const msg = error?.message || "";
+      toast.error(
+        /already registered|duplicate|unique/i.test(msg)
+          ? "This Bill No is already registered. Please check the bill number."
+          : msg || "Could not register. Please try again.",
+      );
       return;
     }
     saveReg(row);
