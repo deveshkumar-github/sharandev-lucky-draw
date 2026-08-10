@@ -465,6 +465,51 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           </div>
         )}
 
+        <div className="mt-3 rounded-3xl border-2 border-gold/60 bg-[color:var(--gold)]/10 p-4 shadow-gold">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="font-display text-lg font-black text-maroon">🧾 Missing Bill Numbers</div>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs font-bold text-maroon">Total bills</span>
+              <input
+                value={targetDraft}
+                onChange={(e) => setTargetDraft(e.target.value.replace(/[^0-9]/g, ""))}
+                className="w-20 rounded-xl border border-border bg-white px-3 py-2 text-center font-ticket font-black text-maroon outline-none focus:border-gold"
+              />
+              <button
+                onClick={saveTarget}
+                disabled={savingTarget}
+                className="rounded-xl gradient-gold px-3 py-2 text-xs font-black text-[color:var(--maroon)] disabled:opacity-50"
+              >
+                {savingTarget ? "…" : "Save"}
+              </button>
+            </div>
+          </div>
+          <div className="mt-2 text-xs font-semibold text-maroon/70">
+            {missingBills.usedCount} of {billTarget} bills entered · {missingBills.miss.length} missing.
+            Tap a number to add its details.
+          </div>
+          <div className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto">
+            {missingBills.miss.length === 0 ? (
+              <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                All bills entered ✓
+              </span>
+            ) : (
+              missingBills.miss.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => {
+                    setPrefillBillNo(String(n));
+                    setShowAdd(true);
+                  }}
+                  className="rounded-full border-2 border-primary/40 bg-white px-3 py-1.5 font-ticket text-sm font-black text-primary transition hover:bg-primary hover:text-primary-foreground active:scale-90"
+                >
+                  {n}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
         <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
           <span className="relative flex h-2.5 w-2.5">
             {live && (
