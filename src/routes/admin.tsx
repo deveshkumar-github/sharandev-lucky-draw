@@ -691,8 +691,12 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
 
       {showAdd && (
         <AddEntryModal
+          initialBillNo={prefillBillNo}
           pw={pw}
-          onClose={() => setShowAdd(false)}
+          onClose={() => {
+            setShowAdd(false);
+            setPrefillBillNo("");
+          }}
           onAdded={(row) => {
             setRows((prev) => [row, ...prev]);
             setShowAdd(false);
