@@ -611,6 +611,24 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         </div>
 
         <div className="mt-4 overflow-hidden rounded-3xl border border-border bg-white shadow-festive">
+          {selected.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 border-b border-border bg-[color:var(--gold)]/10 px-4 py-3">
+              <span className="text-sm font-bold text-maroon">{selected.length} selected</span>
+              <button
+                onClick={() => setSelected([])}
+                className="rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-bold text-maroon"
+              >
+                Clear
+              </button>
+              <button
+                onClick={mergeSelected}
+                disabled={merging || selected.length < 2}
+                className="ml-auto rounded-xl gradient-gold px-4 py-2 text-xs font-black text-[color:var(--maroon)] disabled:opacity-50"
+              >
+                {merging ? "Merging…" : "🔗 Merge selected entries"}
+              </button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="gradient-festive text-primary-foreground">
