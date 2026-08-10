@@ -817,6 +817,19 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         />
       )}
 
+      {fullEditRow && (
+        <EditEntryModal
+          pw={pw}
+          row={fullEditRow}
+          onClose={() => setFullEditRow(null)}
+          onSaved={(row) => {
+            setRows((prev) => prev.map((x) => (x.id === row.id ? row : x)));
+            setFullEditRow(null);
+            toast.success("Entry updated");
+          }}
+        />
+      )}
+
       {showTpl && (
         <TemplateModal
           pw={pw}
