@@ -11,6 +11,7 @@ import {
   adminSaveTemplate,
   adminUpdatePayment,
 } from "@/lib/admin.functions";
+import { adminSetFlags } from "@/lib/admin.functions";
 import { DEFAULT_TEMPLATES, fillTemplate, waLink, money } from "@/lib/templates";
 import logo from "@/assets/sharandev-logo.png";
 
@@ -35,6 +36,8 @@ type Row = {
   total_bill: number;
   total_paid: number;
   fully_paid: boolean;
+  saved_done?: boolean;
+  followup_done?: boolean;
   whatsapp_done: boolean;
   instagram1_done: boolean;
   instagram2_done: boolean;
@@ -152,6 +155,9 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [moneyPw, setMoneyPw] = useState("");
   const [moneyErr, setMoneyErr] = useState(false);
   const [notices, setNotices] = useState<Row[]>([]);
+  const [targetDraft, setTargetDraft] = useState("");
+  const [savingTarget, setSavingTarget] = useState(false);
+  const [prefillBillNo, setPrefillBillNo] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined")
@@ -220,6 +226,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         const map = { ...DEFAULT_TEMPLATES };
         for (const t of list as { key: string; value: string }[]) map[t.key] = t.value;
         setTemplates(map);
+        setTargetDraft(map.bill_target ?? "120");
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,6 +255,43 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     ).length;
     return { total, cloud9, outside, wa, billed, collected, pending, pendingCount };
   }, [rows]);
+
+  const billTarget = Math.max(0, Math.min(5000, Number(templates.bill_target ?? 120) || 0));
+
+  const missingBills = useMemo(() => {
+    const used = new Set<number>();
+    for (const r of rows) {
+      const n = Number(String(r.bill_no ?? "").replace(/[^0-9]/g, ""));
+      if (n > 0) used.add(n);
+    }
+    const miss: number[] = [];
+    for (let i = 1; i <= billTarget; i++) if (!used.has(i)) miss.push(i);
+    return { miss, usedCount: used.size };
+  }, [rows, billTarget]);
+
+  async function saveTarget() {
+    setSavingTarget(true);
+    try {
+      const v = String(Math.max(0, Math.min(5000, Number(targetDraft) || 0)));
+      await adminSaveTemplate({ data: { password: pw, key: "bill_target", value: v } });
+      setTemplates((p) => ({ ...p, bill_target: v }));
+      toast.success("Total bills target saved");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSavingTarget(false);
+    }
+  }
+
+  async function toggleFlag(r: Row, field: "saved_done" | "followup_done", value: boolean) {
+    setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, [field]: value } : x)));
+    try {
+      await adminSetFlags({ data: { password: pw, id: r.id, [field]: value } });
+    } catch (e: unknown) {
+      setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, [field]: !value } : x)));
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    }
+  }
 
   function pickWinners() {
     if (!rows.length) return toast.error("No entries yet");
