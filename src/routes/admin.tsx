@@ -301,6 +301,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   }
 
   function pickWinners() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     if (!rows.length) return toast.error("No entries yet");
     const pool = [...rows];
     const picked: Row[] = [];
