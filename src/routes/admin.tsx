@@ -839,17 +839,19 @@ function AddEntryModal({
   pw,
   onClose,
   onAdded,
+  initialBillNo = "",
 }: {
   pw: string;
   onClose: () => void;
   onAdded: (r: Row) => void;
+  initialBillNo?: string;
 }) {
   const [full_name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWa] = useState("");
   const [is_cloud9, setC9] = useState(false);
   const [bill, setBill] = useState("");
-  const [billNo, setBillNo] = useState("");
+  const [billNo, setBillNo] = useState(initialBillNo);
   const [paid, setPaid] = useState("");
   const [fullPaid, setFullPaid] = useState(false);
   const [loading, setLoading] = useState(false);
