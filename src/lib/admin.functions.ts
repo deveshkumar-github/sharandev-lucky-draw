@@ -143,3 +143,27 @@ export const adminUpdatePayment = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return row;
   });
+
+export const adminSetFlags = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    password: string;
+    id: string;
+    saved_done?: boolean;
+    followup_done?: boolean;
+  }) => d)
+  .handler(async ({ data }) => {
+    verify(data.password);
+    const patch: { saved_done?: boolean; followup_done?: boolean } = {};
+    if (typeof data.saved_done === "boolean") patch.saved_done = data.saved_done;
+    if (typeof data.followup_done === "boolean") patch.followup_done = data.followup_done;
+    if (!Object.keys(patch).length) throw new Error("Nothing to update");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("registrations")
+      .update(patch)
+      .eq("id", data.id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
