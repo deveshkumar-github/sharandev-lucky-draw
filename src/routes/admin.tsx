@@ -335,7 +335,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   }
 
   function exportCSV() {
-    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Bill No", "Total Bill", "Total Paid", "Pending", "Fully Paid", "WA Msg", "IG1", "IG2", "YT", "Date"];
+    const header = ["Entry", "Name", "Phone", "WhatsApp", "Cloud9", "Bill No", "Total Bill", "Total Paid", "Pending", "Fully Paid", "Saved", "Followed Up", "WA Msg", "IG1", "IG2", "YT", "Date"];
     const lines = [header.join(",")].concat(
       filtered.map((r) =>
         [
@@ -349,6 +349,8 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           String(r.total_paid ?? 0),
           String(Math.max(0, Number(r.total_bill || 0) - Number(r.total_paid || 0))),
           r.fully_paid ? "Yes" : "No",
+          r.saved_done ? "Yes" : "No",
+          r.followup_done ? "Yes" : "No",
           r.whatsapp_done ? "Yes" : "No",
           r.instagram1_done ? "Yes" : "No",
           r.instagram2_done ? "Yes" : "No",
