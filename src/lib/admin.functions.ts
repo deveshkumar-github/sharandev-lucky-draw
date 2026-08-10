@@ -109,6 +109,7 @@ export const adminSaveTemplate = createServerFn({ method: "POST" })
       "wa_winner_template",
       "coupon_title",
       "coupon_subtitle",
+      "bill_target",
     ];
     if (!allowed.includes(data.key)) throw new Error("Unknown template");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
