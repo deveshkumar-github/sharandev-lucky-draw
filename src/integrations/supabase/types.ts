@@ -40,6 +40,7 @@ export type Database = {
           bill_no: string
           created_at: string
           entry_number: string
+          followup_done: boolean
           full_name: string
           fully_paid: boolean
           id: string
@@ -47,6 +48,7 @@ export type Database = {
           instagram2_done: boolean
           is_cloud9: boolean
           phone: string
+          saved_done: boolean
           total_bill: number
           total_paid: number
           whatsapp: string
@@ -57,6 +59,7 @@ export type Database = {
           bill_no?: string
           created_at?: string
           entry_number?: string
+          followup_done?: boolean
           full_name: string
           fully_paid?: boolean
           id?: string
@@ -64,6 +67,7 @@ export type Database = {
           instagram2_done?: boolean
           is_cloud9?: boolean
           phone: string
+          saved_done?: boolean
           total_bill?: number
           total_paid?: number
           whatsapp: string
@@ -74,6 +78,7 @@ export type Database = {
           bill_no?: string
           created_at?: string
           entry_number?: string
+          followup_done?: boolean
           full_name?: string
           fully_paid?: boolean
           id?: string
@@ -81,6 +86,7 @@ export type Database = {
           instagram2_done?: boolean
           is_cloud9?: boolean
           phone?: string
+          saved_done?: boolean
           total_bill?: number
           total_paid?: number
           whatsapp?: string
