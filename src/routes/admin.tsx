@@ -1128,6 +1128,123 @@ function PaymentModal({
   onClose: () => void;
   onSaved: (r: Row) => void;
 }) {
+  return <PaymentModalInner pw={pw} row={row} onClose={onClose} onSaved={onSaved} />;
+}
+
+function EditEntryModal({
+  pw,
+  row,
+  onClose,
+  onSaved,
+}: {
+  pw: string;
+  row: Row;
+  onClose: () => void;
+  onSaved: (r: Row) => void;
+}) {
+  const [name, setName] = useState(row.full_name);
+  const [phone, setPhone] = useState(row.phone);
+  const [wa, setWa] = useState(row.whatsapp);
+  const [cloud9, setCloud9] = useState(!!row.is_cloud9);
+  const [billNo, setBillNo] = useState(row.bill_no ?? "");
+  const [bill, setBill] = useState(String(row.total_bill ?? 0));
+  const [paid, setPaid] = useState(String(row.total_paid ?? 0));
+  const [fullPaid, setFullPaid] = useState(!!row.fully_paid);
+  const [loading, setLoading] = useState(false);
+  const pending = Math.max(
+    0,
+    (Number(bill) || 0) - (fullPaid ? Number(bill) || 0 : Number(paid) || 0),
+  );
+
+  async function save() {
+    if (!name.trim() || !phone.trim() || !wa.trim()) {
+      toast.error("Name, phone and WhatsApp are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const updated = await adminUpdateRegistration({
+        data: {
+          password: pw,
+          id: row.id,
+          full_name: name,
+          phone,
+          whatsapp: wa,
+          is_cloud9: cloud9,
+          bill_no: billNo,
+          total_bill: Number(bill) || 0,
+          total_paid: Number(paid) || 0,
+          fully_paid: fullPaid,
+        },
+      });
+      onSaved(updated as Row);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inputCls =
+    "w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold";
+
+  return (
+    <div className="fixed inset-0 z-40 grid place-items-center overflow-y-auto bg-black/60 px-5 py-8" onClick={onClose}>
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-festive" onClick={(e) => e.stopPropagation()}>
+        <h2 className="font-display text-2xl font-black text-maroon">Edit Entry</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{row.entry_number}</p>
+        <div className="mt-4 space-y-3">
+          <input className={inputCls} placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className={inputCls} placeholder="Phone" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input className={inputCls} placeholder="WhatsApp" inputMode="tel" value={wa} onChange={(e) => setWa(e.target.value)} />
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={cloud9} onChange={(e) => setCloud9(e.target.checked)} />
+            Cloud9 resident
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <input className={inputCls} placeholder="Total Bill (₹)" inputMode="decimal" value={bill} onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))} />
+            <input className={inputCls} placeholder="Bill No" value={billNo} onChange={(e) => setBillNo(e.target.value)} />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={fullPaid} onChange={(e) => setFullPaid(e.target.checked)} />
+            Fully paid
+          </label>
+          {!fullPaid && (
+            <input className={inputCls} placeholder="Total Paid (₹)" inputMode="decimal" value={paid} onChange={(e) => setPaid(e.target.value.replace(/[^0-9.]/g, ""))} />
+          )}
+          <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2 text-sm">
+            <span className="font-semibold text-maroon">Pending</span>
+            <span className="font-ticket font-black text-primary">₹{money(pending)}</span>
+          </div>
+        </div>
+        <div className="mt-6 flex gap-2">
+          <button onClick={onClose} className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon">
+            Cancel
+          </button>
+          <button
+            disabled={loading}
+            onClick={save}
+            className="flex-1 rounded-2xl gradient-festive px-4 py-3 font-bold text-primary-foreground disabled:opacity-50"
+          >
+            {loading ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentModalInner({
+  pw,
+  row,
+  onClose,
+  onSaved,
+}: {
+  pw: string;
+  row: Row;
+  onClose: () => void;
+  onSaved: (r: Row) => void;
+}) {
   const [bill, setBill] = useState(String(row.total_bill ?? 0));
   const [paid, setPaid] = useState(String(row.total_paid ?? 0));
   const [fullPaid, setFullPaid] = useState(!!row.fully_paid);
