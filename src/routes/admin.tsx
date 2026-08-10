@@ -579,6 +579,8 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                     "Cloud9",
                     "Bill No",
                     ...(showMoney ? ["Bill", "Paid", "Pending"] : []),
+                    "Saved",
+                    "Follow-up",
                     "Date & Time",
                     "Actions",
                   ].map((h) => (
@@ -616,6 +618,24 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                     )}
                     <td className="px-4 py-3 whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
                     <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        title="Saved"
+                        className="h-5 w-5 accent-[color:var(--primary)]"
+                        checked={!!r.saved_done}
+                        onChange={(e) => toggleFlag(r, "saved_done", e.target.checked)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        title="Followed up"
+                        className="h-5 w-5 accent-[color:var(--primary)]"
+                        checked={!!r.followup_done}
+                        onChange={(e) => toggleFlag(r, "followup_done", e.target.checked)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
                           title="Open WhatsApp chat"
@@ -644,7 +664,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={showMoney ? 11 : 8} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={showMoney ? 13 : 10} className="px-4 py-10 text-center text-muted-foreground">
                       No registrations yet.
                     </td>
                   </tr>
