@@ -11,7 +11,11 @@ import {
   adminSaveTemplate,
   adminUpdatePayment,
 } from "@/lib/admin.functions";
-import { adminSetFlags } from "@/lib/admin.functions";
+import {
+  adminSetFlags,
+  adminUpdateRegistration,
+  adminMergeRegistrations,
+} from "@/lib/admin.functions";
 import { DEFAULT_TEMPLATES, fillTemplate, waLink, money } from "@/lib/templates";
 import logo from "@/assets/sharandev-logo.png";
 
@@ -146,6 +150,9 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [showAdd, setShowAdd] = useState(false);
   const [showTpl, setShowTpl] = useState(false);
   const [editRow, setEditRow] = useState<Row | null>(null);
+  const [fullEditRow, setFullEditRow] = useState<Row | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [merging, setMerging] = useState(false);
   const [templates, setTemplates] = useState<Record<string, string>>(DEFAULT_TEMPLATES);
 
   const [live, setLive] = useState(true);
@@ -313,6 +320,41 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
       toast.success("Deleted");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Delete failed");
+    }
+  }
+
+  function toggleSelect(id: string, on: boolean) {
+    setSelected((prev) => (on ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
+  }
+
+  async function mergeSelected() {
+    if (selected.length < 2) return toast.error("Select at least 2 entries to merge");
+    const chosen = rows.filter((r) => selected.includes(r.id));
+    const primary = [...chosen].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    )[0];
+    if (
+      !confirm(
+        `Merge ${chosen.length} entries into ${primary.entry_number} — ${primary.full_name}?\nBills and payments will be added together and the other entries removed.`,
+      )
+    )
+      return;
+    setMerging(true);
+    try {
+      const res = await adminMergeRegistrations({
+        data: { password: pw, primaryId: primary.id, mergeIds: selected },
+      });
+      const merged = res.merged as Row;
+      const removed = new Set(res.removedIds);
+      setRows((prev) =>
+        prev.filter((x) => !removed.has(x.id)).map((x) => (x.id === merged.id ? merged : x)),
+      );
+      setSelected([]);
+      toast.success(`Merged into ${merged.entry_number}`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Merge failed");
+    } finally {
+      setMerging(false);
     }
   }
 
@@ -569,11 +611,30 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
         </div>
 
         <div className="mt-4 overflow-hidden rounded-3xl border border-border bg-white shadow-festive">
+          {selected.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 border-b border-border bg-[color:var(--gold)]/10 px-4 py-3">
+              <span className="text-sm font-bold text-maroon">{selected.length} selected</span>
+              <button
+                onClick={() => setSelected([])}
+                className="rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-bold text-maroon"
+              >
+                Clear
+              </button>
+              <button
+                onClick={mergeSelected}
+                disabled={merging || selected.length < 2}
+                className="ml-auto rounded-xl gradient-gold px-4 py-2 text-xs font-black text-[color:var(--maroon)] disabled:opacity-50"
+              >
+                {merging ? "Merging…" : "🔗 Merge selected entries"}
+              </button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="gradient-festive text-primary-foreground">
                 <tr>
                   {[
+                    "",
                     "Entry",
                     "Name",
                     "Phone",
@@ -595,6 +656,15 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
               <tbody>
                 {filtered.map((r, i) => (
                   <tr key={r.id} className={i % 2 ? "bg-muted/40" : ""}>
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        title="Select for merge"
+                        className="h-4 w-4 accent-[color:var(--primary)]"
+                        checked={selected.includes(r.id)}
+                        onChange={(e) => toggleSelect(r.id, e.target.checked)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-ticket font-black text-primary">{r.entry_number}</td>
                     <td className="px-4 py-3">{r.full_name}</td>
                     <td className="px-4 py-3">{r.phone}</td>
@@ -654,6 +724,13 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                           💰
                         </button>
                         <button
+                          title="Edit entry"
+                          onClick={() => setFullEditRow(r)}
+                          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-maroon transition active:scale-90"
+                        >
+                          ✏️
+                        </button>
+                        <button
                           title="Delete"
                           onClick={() => handleDelete(r)}
                           className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-maroon transition active:scale-90"
@@ -666,7 +743,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={showMoney ? 13 : 10} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={showMoney ? 14 : 11} className="px-4 py-10 text-center text-muted-foreground">
                       No registrations yet.
                     </td>
                   </tr>
@@ -736,6 +813,19 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
             setRows((prev) => prev.map((x) => (x.id === row.id ? row : x)));
             setEditRow(null);
             toast.success("Payment updated");
+          }}
+        />
+      )}
+
+      {fullEditRow && (
+        <EditEntryModal
+          pw={pw}
+          row={fullEditRow}
+          onClose={() => setFullEditRow(null)}
+          onSaved={(row) => {
+            setRows((prev) => prev.map((x) => (x.id === row.id ? row : x)));
+            setFullEditRow(null);
+            toast.success("Entry updated");
           }}
         />
       )}
@@ -1028,6 +1118,123 @@ function download(name: string, content: string, type: string) {
   URL.revokeObjectURL(url);
 }
 function PaymentModal({
+  pw,
+  row,
+  onClose,
+  onSaved,
+}: {
+  pw: string;
+  row: Row;
+  onClose: () => void;
+  onSaved: (r: Row) => void;
+}) {
+  return <PaymentModalInner pw={pw} row={row} onClose={onClose} onSaved={onSaved} />;
+}
+
+function EditEntryModal({
+  pw,
+  row,
+  onClose,
+  onSaved,
+}: {
+  pw: string;
+  row: Row;
+  onClose: () => void;
+  onSaved: (r: Row) => void;
+}) {
+  const [name, setName] = useState(row.full_name);
+  const [phone, setPhone] = useState(row.phone);
+  const [wa, setWa] = useState(row.whatsapp);
+  const [cloud9, setCloud9] = useState(!!row.is_cloud9);
+  const [billNo, setBillNo] = useState(row.bill_no ?? "");
+  const [bill, setBill] = useState(String(row.total_bill ?? 0));
+  const [paid, setPaid] = useState(String(row.total_paid ?? 0));
+  const [fullPaid, setFullPaid] = useState(!!row.fully_paid);
+  const [loading, setLoading] = useState(false);
+  const pending = Math.max(
+    0,
+    (Number(bill) || 0) - (fullPaid ? Number(bill) || 0 : Number(paid) || 0),
+  );
+
+  async function save() {
+    if (!name.trim() || !phone.trim() || !wa.trim()) {
+      toast.error("Name, phone and WhatsApp are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const updated = await adminUpdateRegistration({
+        data: {
+          password: pw,
+          id: row.id,
+          full_name: name,
+          phone,
+          whatsapp: wa,
+          is_cloud9: cloud9,
+          bill_no: billNo,
+          total_bill: Number(bill) || 0,
+          total_paid: Number(paid) || 0,
+          fully_paid: fullPaid,
+        },
+      });
+      onSaved(updated as Row);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inputCls =
+    "w-full rounded-xl border border-border px-4 py-3 outline-none focus:border-gold";
+
+  return (
+    <div className="fixed inset-0 z-40 grid place-items-center overflow-y-auto bg-black/60 px-5 py-8" onClick={onClose}>
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-festive" onClick={(e) => e.stopPropagation()}>
+        <h2 className="font-display text-2xl font-black text-maroon">Edit Entry</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{row.entry_number}</p>
+        <div className="mt-4 space-y-3">
+          <input className={inputCls} placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className={inputCls} placeholder="Phone" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input className={inputCls} placeholder="WhatsApp" inputMode="tel" value={wa} onChange={(e) => setWa(e.target.value)} />
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={cloud9} onChange={(e) => setCloud9(e.target.checked)} />
+            Cloud9 resident
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <input className={inputCls} placeholder="Total Bill (₹)" inputMode="decimal" value={bill} onChange={(e) => setBill(e.target.value.replace(/[^0-9.]/g, ""))} />
+            <input className={inputCls} placeholder="Bill No" value={billNo} onChange={(e) => setBillNo(e.target.value)} />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-maroon">
+            <input type="checkbox" checked={fullPaid} onChange={(e) => setFullPaid(e.target.checked)} />
+            Fully paid
+          </label>
+          {!fullPaid && (
+            <input className={inputCls} placeholder="Total Paid (₹)" inputMode="decimal" value={paid} onChange={(e) => setPaid(e.target.value.replace(/[^0-9.]/g, ""))} />
+          )}
+          <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2 text-sm">
+            <span className="font-semibold text-maroon">Pending</span>
+            <span className="font-ticket font-black text-primary">₹{money(pending)}</span>
+          </div>
+        </div>
+        <div className="mt-6 flex gap-2">
+          <button onClick={onClose} className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon">
+            Cancel
+          </button>
+          <button
+            disabled={loading}
+            onClick={save}
+            className="flex-1 rounded-2xl gradient-festive px-4 py-3 font-bold text-primary-foreground disabled:opacity-50"
+          >
+            {loading ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentModalInner({
   pw,
   row,
   onClose,
