@@ -616,6 +616,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
               <thead className="gradient-festive text-primary-foreground">
                 <tr>
                   {[
+                    "",
                     "Entry",
                     "Name",
                     "Phone",
@@ -637,6 +638,15 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
               <tbody>
                 {filtered.map((r, i) => (
                   <tr key={r.id} className={i % 2 ? "bg-muted/40" : ""}>
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        title="Select for merge"
+                        className="h-4 w-4 accent-[color:var(--primary)]"
+                        checked={selected.includes(r.id)}
+                        onChange={(e) => toggleSelect(r.id, e.target.checked)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-ticket font-black text-primary">{r.entry_number}</td>
                     <td className="px-4 py-3">{r.full_name}</td>
                     <td className="px-4 py-3">{r.phone}</td>
@@ -696,6 +706,13 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                           💰
                         </button>
                         <button
+                          title="Edit entry"
+                          onClick={() => setFullEditRow(r)}
+                          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-maroon transition active:scale-90"
+                        >
+                          ✏️
+                        </button>
+                        <button
                           title="Delete"
                           onClick={() => handleDelete(r)}
                           className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-maroon transition active:scale-90"
@@ -708,7 +725,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={showMoney ? 13 : 10} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={showMoney ? 14 : 11} className="px-4 py-10 text-center text-muted-foreground">
                       No registrations yet.
                     </td>
                   </tr>
