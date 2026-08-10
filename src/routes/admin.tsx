@@ -301,7 +301,6 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   }
 
   function pickWinners() {
-
     if (!rows.length) return toast.error("No entries yet");
     const pool = [...rows];
     const picked: Row[] = [];
@@ -314,6 +313,10 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   }
 
   async function handleDelete(r: Row) {
+    if (!confirm(`Delete ${r.entry_number} — ${r.full_name}?`)) return;
+    try {
+      await adminDeleteRegistration({ data: { password: pw, id: r.id } });
+      setRows((prev) => prev.filter((x) => x.id !== r.id));
     if (!confirm(`Delete ${r.entry_number} — ${r.full_name}?`)) return;
     try {
       await adminDeleteRegistration({ data: { password: pw, id: r.id } });
