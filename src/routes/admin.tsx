@@ -579,9 +579,9 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
                     "Cloud9",
                     "Bill No",
                     ...(showMoney ? ["Bill", "Paid", "Pending"] : []),
+                    "Date & Time",
                     "Saved",
                     "Follow-up",
-                    "Date & Time",
                     "Actions",
                   ].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-bold">
