@@ -317,13 +317,44 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     try {
       await adminDeleteRegistration({ data: { password: pw, id: r.id } });
       setRows((prev) => prev.filter((x) => x.id !== r.id));
-    if (!confirm(`Delete ${r.entry_number} — ${r.full_name}?`)) return;
-    try {
-      await adminDeleteRegistration({ data: { password: pw, id: r.id } });
-      setRows((prev) => prev.filter((x) => x.id !== r.id));
       toast.success("Deleted");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Delete failed");
+    }
+  }
+
+  function toggleSelect(id: string, on: boolean) {
+    setSelected((prev) => (on ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
+  }
+
+  async function mergeSelected() {
+    if (selected.length < 2) return toast.error("Select at least 2 entries to merge");
+    const chosen = rows.filter((r) => selected.includes(r.id));
+    const primary = [...chosen].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    )[0];
+    if (
+      !confirm(
+        `Merge ${chosen.length} entries into ${primary.entry_number} — ${primary.full_name}?\nBills and payments will be added together and the other entries removed.`,
+      )
+    )
+      return;
+    setMerging(true);
+    try {
+      const res = await adminMergeRegistrations({
+        data: { password: pw, primaryId: primary.id, mergeIds: selected },
+      });
+      const merged = res.merged as Row;
+      const removed = new Set(res.removedIds);
+      setRows((prev) =>
+        prev.filter((x) => !removed.has(x.id)).map((x) => (x.id === merged.id ? merged : x)),
+      );
+      setSelected([]);
+      toast.success(`Merged into ${merged.entry_number}`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Merge failed");
+    } finally {
+      setMerging(false);
     }
   }
 
