@@ -11,7 +11,11 @@ import {
   adminSaveTemplate,
   adminUpdatePayment,
 } from "@/lib/admin.functions";
-import { adminSetFlags } from "@/lib/admin.functions";
+import {
+  adminSetFlags,
+  adminUpdateRegistration,
+  adminMergeRegistrations,
+} from "@/lib/admin.functions";
 import { DEFAULT_TEMPLATES, fillTemplate, waLink, money } from "@/lib/templates";
 import logo from "@/assets/sharandev-logo.png";
 
@@ -146,6 +150,9 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [showAdd, setShowAdd] = useState(false);
   const [showTpl, setShowTpl] = useState(false);
   const [editRow, setEditRow] = useState<Row | null>(null);
+  const [fullEditRow, setFullEditRow] = useState<Row | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [merging, setMerging] = useState(false);
   const [templates, setTemplates] = useState<Record<string, string>>(DEFAULT_TEMPLATES);
 
   const [live, setLive] = useState(true);
