@@ -1,15 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const EVENT_NAME = "Sharandev Fashions SAREE EXHIBITION";
+export const EVENT_NAME = "Sharandev Fashions SAREE EXHIBITION 2.O";
 
 export const DEFAULT_TEMPLATES: Record<string, string> = {
   wa_register_template:
-    "Hello Sharandev Fashions! 👋\nI have registered for the Sharandev Fashions SAREE EXHIBITION Lucky Draw.\n\nName: {name}\nPhone: {phone}\nWhatsApp: {whatsapp}\nCloud9 Resident: {cloud9}\nTotal Bill: ₹{bill}\nTotal Paid: ₹{paid}\nPending: ₹{pending}\n\nThank you! 🎁",
+    "Hello Sharandev Fashions! 👋\nI have registered for the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw.\n\nName: {name}\nPhone: {phone}\nWhatsApp: {whatsapp}\nTotal Bill: ₹{bill}\nTotal Paid: ₹{paid}\nPending: ₹{pending}\n\nThank you! 🎁",
   wa_customer_template:
-    "Hi {name}! 🎁\n\nThank you for registering for the Sharandev Fashions SAREE EXHIBITION Lucky Draw.\n\nYour Entry Number: {entry}\nTotal Bill: ₹{bill}\nPaid: ₹{paid}\nPending: ₹{pending}\n\nWinners will be announced soon — stay tuned!",
+    "Hi {name}! 🎁\n\nThank you for registering for the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw.\n\nYour Entry Number: {entry}\nTotal Bill: ₹{bill}\nPaid: ₹{paid}\nPending: ₹{pending}\n\nThe winner will be announced soon — stay tuned!",
   wa_winner_template:
-    "Congratulations {name}! 🏆\n\nYou have WON in the Sharandev Fashions SAREE EXHIBITION Lucky Draw!\n\nEntry Number: {entry}\nPrize: {prize}\n\nPlease visit our stall to collect your prize. 🎉",
-  coupon_title: "Sharandev Fashions SAREE EXHIBITION",
+    "Congratulations {name}! 🏆\n\nYou have WON in the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw!\n\nEntry Number: {entry}\nPrize: {prize}\n\nPlease visit our stall to collect your prize. 🎉",
+  coupon_title: "Sharandev Fashions SAREE EXHIBITION 2.O",
   coupon_subtitle: "Lucky Draw Entry",
 };
 

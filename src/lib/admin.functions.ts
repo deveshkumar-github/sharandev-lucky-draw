@@ -89,6 +89,20 @@ export const adminDeleteRegistration = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const adminDeleteAllRegistrations = createServerFn({ method: "POST" })
+  .inputValidator((d: { password: string }) => d)
+  .handler(async ({ data }) => {
+    verify(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: deleted, error } = await supabaseAdmin
+      .from("registrations")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000")
+      .select("id");
+    if (error) throw new Error(error.message);
+    return { deleted: deleted?.length ?? 0 };
+  });
+
 export const adminListTemplates = createServerFn({ method: "POST" })
   .inputValidator((d: { password: string }) => d)
   .handler(async ({ data }) => {

@@ -8,10 +8,10 @@ export const Route = createFileRoute("/success")({
   component: SuccessPage,
   head: () => ({
     meta: [
-      { title: "You're In! — Sharandev Fashions Saree Exhibition Lucky Draw" },
+      { title: "You're In! — Sharandev Fashions SAREE EXHIBITION 2.O" },
       {
         name: "description",
-        content: "You are entered in the Sharandev Fashions SAREE EXHIBITION Lucky Draw.",
+        content: "You are entered in the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -121,7 +121,7 @@ function SuccessPage() {
                   aria-hidden="true"
                 />
                 <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-maroon/5 py-3 font-ticket text-[10px] font-bold uppercase tracking-[0.24em] text-maroon/70">
-                  3 Winners · 1st Prize ₹5,000 Saree
+                   1 Winner · 1st Prize ₹5,000 Saree
                 </div>
               </div>
             </div>

@@ -10,8 +10,8 @@ export const Route = createFileRoute("/connect")({
   component: ConnectPage,
   head: () => ({
     meta: [
-      { title: "Connect With Us — Cloud9 Lucky Draw" },
-      { name: "description", content: "Follow us on WhatsApp, Instagram and YouTube to complete your Lucky Draw entry." },
+      { title: "Connect With Us — SAREE EXHIBITION 2.O Lucky Draw" },
+      { name: "description", content: "Follow Sharandev Fashions on WhatsApp, Instagram and YouTube to complete your Lucky Draw entry." },
     ],
   }),
 });

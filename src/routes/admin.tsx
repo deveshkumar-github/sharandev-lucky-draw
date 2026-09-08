@@ -7,6 +7,7 @@ import {
   adminListRegistrations,
   adminAddRegistration,
   adminDeleteRegistration,
+  adminDeleteAllRegistrations,
   adminListTemplates,
   adminSaveTemplate,
   adminUpdatePayment,
@@ -52,11 +53,7 @@ type Row = {
 const PW_KEY = "sharandev_admin_pw";
 const MONEY_KEY = "sharandev_admin_show_money";
 
-const PRIZES = [
-  "1st Prize — Saree worth ₹5,000/-",
-  "2nd Prize — Exciting Gift",
-  "3rd Prize — Exciting Gift",
-];
+const PRIZES = ["1st Prize — Saree worth ₹5,000/-"];
 
 function WhatsAppIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -145,6 +142,8 @@ function Login({ onOk }: { onOk: (pw: string) => void }) {
 function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [q, setQ] = useState("");
+  const [billFilter, setBillFilter] = useState<"all" | "missing">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "bill" | "saved">("newest");
   const [winners, setWinners] = useState<Row[] | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -165,6 +164,10 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [targetDraft, setTargetDraft] = useState("");
   const [savingTarget, setSavingTarget] = useState(false);
   const [prefillBillNo, setPrefillBillNo] = useState("");
+  const [showReset, setShowReset] = useState(false);
+  const [resetPw, setResetPw] = useState("");
+  const [resetError, setResetError] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined")
@@ -241,13 +244,24 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) =>
-      [r.full_name, r.phone, r.whatsapp, r.entry_number, r.bill_no ?? ""].some((v) =>
-        v.toLowerCase().includes(s),
-      ),
-    );
-  }, [q, rows]);
+    const matching = rows.filter((r) => {
+      const matchesSearch = !s ||
+        [r.full_name, r.phone, r.whatsapp, r.entry_number, r.bill_no ?? ""].some((v) =>
+          v.toLowerCase().includes(s),
+        );
+      const matchesBill = billFilter === "all" || !r.bill_no?.trim();
+      return matchesSearch && matchesBill;
+    });
+    return [...matching].sort((a, b) => {
+      if (sortBy === "saved") return Number(!!b.saved_done) - Number(!!a.saved_done);
+      if (sortBy === "bill") {
+        const billA = Number(String(a.bill_no ?? "").replace(/[^0-9]/g, "")) || Number.MAX_SAFE_INTEGER;
+        const billB = Number(String(b.bill_no ?? "").replace(/[^0-9]/g, "")) || Number.MAX_SAFE_INTEGER;
+        return billA - billB;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [q, rows, billFilter, sortBy]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -304,7 +318,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     if (!rows.length) return toast.error("No entries yet");
     const pool = [...rows];
     const picked: Row[] = [];
-    while (picked.length < 3 && pool.length) {
+    while (picked.length < 1 && pool.length) {
       picked.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     }
     setWinners(picked);
@@ -320,6 +334,29 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
       toast.success("Deleted");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Delete failed");
+    }
+  }
+
+  async function resetAllEntries(e: React.FormEvent) {
+    e.preventDefault();
+    if (resetPw !== pw) {
+      setResetError(true);
+      return;
+    }
+    if (!confirm("Delete every registration permanently? This cannot be undone.")) return;
+    setResetting(true);
+    try {
+      const result = await adminDeleteAllRegistrations({ data: { password: resetPw } });
+      setRows([]);
+      setSelected([]);
+      setNotices([]);
+      setShowReset(false);
+      setResetPw("");
+      toast.success(`${result.deleted} entr${result.deleted === 1 ? "y" : "ies"} deleted`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Reset failed");
+    } finally {
+      setResetting(false);
     }
   }
 
@@ -430,7 +467,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
               Lucky Draw Dashboard
             </h1>
             <p className="font-serif-lux text-base italic text-muted-foreground">
-              Sharandev Fashions SAREE EXHIBITION
+              Sharandev Fashions SAREE EXHIBITION 2.O
             </p>
           </div>
           <button
@@ -606,8 +643,44 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
             onClick={pickWinners}
             className="rounded-2xl gradient-festive px-5 py-3 font-black text-primary-foreground shadow-festive"
           >
-            🎲 Pick 3 Winners
+            🎲 Pick 1 Winner
           </button>
+          <button
+            onClick={() => {
+              setResetPw("");
+              setResetError(false);
+              setShowReset(true);
+            }}
+            className="rounded-2xl border border-primary/30 bg-primary/5 px-5 py-3 font-bold text-primary"
+          >
+            🗑️ Reset entries
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
+          <span className="text-sm font-bold text-maroon">Quick view</span>
+          <select
+            value={billFilter}
+            onChange={(e) => setBillFilter(e.target.value as "all" | "missing")}
+            className="rounded-xl border border-border bg-white px-3 py-2 text-sm font-semibold text-maroon outline-none focus:border-gold"
+            aria-label="Filter bill numbers"
+          >
+            <option value="all">All bill numbers</option>
+            <option value="missing">Missing bill number</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as "newest" | "bill" | "saved")}
+            className="rounded-xl border border-border bg-white px-3 py-2 text-sm font-semibold text-maroon outline-none focus:border-gold"
+            aria-label="Sort registrations"
+          >
+            <option value="newest">Sort: Newest first</option>
+            <option value="bill">Sort: Bill number</option>
+            <option value="saved">Sort: Saved first</option>
+          </select>
+          <span className="text-xs font-semibold text-muted-foreground">
+            Showing {filtered.length} of {rows.length}
+          </span>
         </div>
 
         <div className="mt-4 overflow-hidden rounded-3xl border border-border bg-white shadow-festive">
@@ -837,6 +910,50 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
           onClose={() => setShowTpl(false)}
           onSaved={(k, v) => setTemplates((prev) => ({ ...prev, [k]: v }))}
         />
+      )}
+
+      {showReset && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-5" onClick={() => setShowReset(false)}>
+          <form
+            onSubmit={resetAllEntries}
+            className="w-full max-w-sm rounded-3xl border border-primary/20 bg-white p-6 shadow-festive"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-3xl">⚠️</div>
+            <h2 className="mt-2 font-display text-2xl font-black text-maroon">Delete all entries?</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This permanently removes every registration from the admin panel. This action cannot be undone.
+            </p>
+            <input
+              type="password"
+              autoFocus
+              value={resetPw}
+              onChange={(e) => {
+                setResetPw(e.target.value);
+                setResetError(false);
+              }}
+              placeholder="Enter admin password"
+              className="mt-4 w-full rounded-xl border border-border bg-white px-4 py-3 text-base text-maroon outline-none focus:border-gold"
+            />
+            {resetError && <p className="mt-2 text-xs font-bold text-primary">Incorrect admin password.</p>}
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowReset(false)}
+                className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-bold text-maroon"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={resetting || !resetPw}
+                className="flex-1 rounded-2xl bg-primary px-4 py-3 font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {resetting ? "Deleting…" : "Delete all"}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {winners && (

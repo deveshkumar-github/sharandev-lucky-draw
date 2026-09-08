@@ -10,8 +10,8 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
   head: () => ({
     meta: [
-      { title: "Register — Sharandev Fashions Saree Exhibition Lucky Draw" },
-      { name: "description", content: "Register in 30 seconds for the Sharandev Fashions SAREE EXHIBITION Lucky Draw." },
+      { title: "Register — Sharandev Fashions SAREE EXHIBITION 2.O" },
+      { name: "description", content: "Register for the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw." },
     ],
   }),
 });
@@ -33,7 +33,6 @@ function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [sameWa, setSameWa] = useState<null | boolean>(null);
   const [wa, setWa] = useState("");
-  const [cloud9, setCloud9] = useState<null | boolean>(null);
   const [bill, setBill] = useState("");
   const [billNo, setBillNo] = useState("");
   const [paid, setPaid] = useState("");
@@ -41,7 +40,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const ready =
-    name.trim() && phone.trim() && sameWa !== null && (sameWa || wa.trim()) && cloud9 !== null && bill.trim() !== "";
+    name.trim() && phone.trim() && sameWa !== null && (sameWa || wa.trim()) && bill.trim() !== "";
 
   const billNum = Number(bill) || 0;
   const paidNum = fullPaid ? billNum : Number(paid) || 0;
@@ -53,7 +52,7 @@ function RegisterPage() {
       full_name: name,
       phone,
       whatsapp,
-      is_cloud9: !!cloud9,
+      is_cloud9: false,
       bill_no: billNo,
       total_bill: billNum,
       total_paid: Math.min(paidNum, billNum),
@@ -133,12 +132,6 @@ function RegisterPage() {
               />
             </Field>
           )}
-
-          <YesNo
-            label="Are you from Cloud9?"
-            value={cloud9}
-            onChange={setCloud9}
-          />
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Total Bill Amount (₹) *">
