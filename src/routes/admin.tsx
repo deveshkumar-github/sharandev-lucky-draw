@@ -7,6 +7,7 @@ import {
   adminListRegistrations,
   adminAddRegistration,
   adminDeleteRegistration,
+  adminDeleteAllRegistrations,
   adminListTemplates,
   adminSaveTemplate,
   adminUpdatePayment,
@@ -52,11 +53,7 @@ type Row = {
 const PW_KEY = "sharandev_admin_pw";
 const MONEY_KEY = "sharandev_admin_show_money";
 
-const PRIZES = [
-  "1st Prize — Saree worth ₹5,000/-",
-  "2nd Prize — Exciting Gift",
-  "3rd Prize — Exciting Gift",
-];
+const PRIZES = ["1st Prize — Saree worth ₹5,000/-"];
 
 function WhatsAppIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -145,6 +142,8 @@ function Login({ onOk }: { onOk: (pw: string) => void }) {
 function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [q, setQ] = useState("");
+  const [billFilter, setBillFilter] = useState<"all" | "missing">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "bill" | "saved">("newest");
   const [winners, setWinners] = useState<Row[] | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -165,6 +164,10 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
   const [targetDraft, setTargetDraft] = useState("");
   const [savingTarget, setSavingTarget] = useState(false);
   const [prefillBillNo, setPrefillBillNo] = useState("");
+  const [showReset, setShowReset] = useState(false);
+  const [resetPw, setResetPw] = useState("");
+  const [resetError, setResetError] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined")
@@ -241,12 +244,23 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) =>
-      [r.full_name, r.phone, r.whatsapp, r.entry_number, r.bill_no ?? ""].some((v) =>
-        v.toLowerCase().includes(s),
-      ),
-    );
+    const matching = rows.filter((r) => {
+      const matchesSearch = !s ||
+        [r.full_name, r.phone, r.whatsapp, r.entry_number, r.bill_no ?? ""].some((v) =>
+          v.toLowerCase().includes(s),
+        );
+      const matchesBill = billFilter === "all" || !r.bill_no?.trim();
+      return matchesSearch && matchesBill;
+    });
+    return [...matching].sort((a, b) => {
+      if (sortBy === "saved") return Number(!!b.saved_done) - Number(!!a.saved_done);
+      if (sortBy === "bill") {
+        const billA = Number(String(a.bill_no ?? "").replace(/[^0-9]/g, "")) || Number.MAX_SAFE_INTEGER;
+        const billB = Number(String(b.bill_no ?? "").replace(/[^0-9]/g, "")) || Number.MAX_SAFE_INTEGER;
+        return billA - billB;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [q, rows]);
 
   const stats = useMemo(() => {
@@ -304,7 +318,7 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
     if (!rows.length) return toast.error("No entries yet");
     const pool = [...rows];
     const picked: Row[] = [];
-    while (picked.length < 3 && pool.length) {
+    while (picked.length < 1 && pool.length) {
       picked.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     }
     setWinners(picked);
@@ -320,6 +334,29 @@ function Dashboard({ pw, onLogout }: { pw: string; onLogout: () => void }) {
       toast.success("Deleted");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Delete failed");
+    }
+  }
+
+  async function resetAllEntries(e: React.FormEvent) {
+    e.preventDefault();
+    if (resetPw !== pw) {
+      setResetError(true);
+      return;
+    }
+    if (!confirm("Delete every registration permanently? This cannot be undone.")) return;
+    setResetting(true);
+    try {
+      const result = await adminDeleteAllRegistrations({ data: { password: resetPw } });
+      setRows([]);
+      setSelected([]);
+      setNotices([]);
+      setShowReset(false);
+      setResetPw("");
+      toast.success(`${result.deleted} entr${result.deleted === 1 ? "y" : "ies"} deleted`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Reset failed");
+    } finally {
+      setResetting(false);
     }
   }
 
