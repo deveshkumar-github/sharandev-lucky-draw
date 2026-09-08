@@ -5,16 +5,16 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Sharandev Fashions Saree Exhibition — Lucky Draw" },
+      { title: "Sharandev Fashions SAREE EXHIBITION 2.O — Lucky Draw" },
       {
         name: "description",
         content:
-          "Register free for the Sharandev Fashions SAREE EXHIBITION Lucky Draw. 3 winners — 1st prize a ₹5000 saree plus 2 exciting gifts.",
+          "Register for the Sharandev Fashions SAREE EXHIBITION 2.O Lucky Draw and win a ₹5,000 saree.",
       },
-      { property: "og:title", content: "Sharandev Fashions Saree Exhibition — Lucky Draw" },
+      { property: "og:title", content: "Sharandev Fashions SAREE EXHIBITION 2.O — Lucky Draw" },
       {
         property: "og:description",
-        content: "3 winners. 1st prize ₹5000 worth saree + 2 exciting gifts. Register in 30 seconds.",
+        content: "One lucky winner will receive a ₹5,000 worth saree. Register for SAREE EXHIBITION 2.O.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -39,7 +39,7 @@ function Landing() {
         <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl">
           Sharandev Fashions
           <br />
-          <span className="text-shimmer italic">SAREE EXHIBITION</span>
+          <span className="text-shimmer italic">SAREE EXHIBITION 2.O</span>
         </h1>
         <div className="mt-4 flex items-center gap-3">
           <span className="h-px w-10 bg-gold/60" />
@@ -48,17 +48,15 @@ function Landing() {
         </div>
 
         <p className="mt-6 max-w-xs text-base text-white/85">
-          Register in <b className="text-gold">30 seconds</b> and win luxurious festive gifts at the Sharandev Fashions Saree Exhibition.
+          Register in <b className="text-gold">30 seconds</b> for your chance to win a ₹5,000 saree at SAREE EXHIBITION 2.O.
         </p>
 
         <div className="mt-8 w-full space-y-3 text-left">
           <div className="text-center text-[11px] font-bold uppercase tracking-[0.3em] text-gold">
-            3 Lucky Winners
+            1 Lucky Winner
           </div>
           {[
             { p: "1st Prize", d: "Saree worth ₹5,000/-", i: "🥇" },
-            { p: "2nd Prize", d: "Exciting Gift", i: "🥈" },
-            { p: "3rd Prize", d: "Exciting Gift", i: "🥉" },
           ].map((w) => (
             <div
               key={w.p}
@@ -81,7 +79,7 @@ function Landing() {
         </Link>
 
         <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/60">
-          Sharandev Fashions SAREE EXHIBITION · 2026
+          Sharandev Fashions SAREE EXHIBITION 2.O · 2026
         </p>
       </div>
     </div>
