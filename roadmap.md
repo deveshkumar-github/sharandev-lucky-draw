@@ -1,0 +1,5 @@
+- [ ] Update lucky draw copy to SAREE EXHIBITION 2.O and one prize
+- [ ] Remove Cloud9 question from registration flow
+- [ ] Add admin filters and sorting for bills and saved status
+- [ ] Add password-protected delete-all reset action
+- [ ] Verify build and preview behavior
